@@ -1,7 +1,8 @@
 import pandas as pd
+import numpy as np
 import pycountry
 from sklearn.impute import KNNImputer
-from sklearn.preprocessing import StandardScaler, PolynomialFeatures
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures, LabelEncoder
 from sklearn.linear_model import LinearRegression
 from numpy.polynomial.polynomial import Polynomial
 import os
@@ -13,6 +14,7 @@ class DataProcessor:
     Handles data from multiple sources including obesity, physical activity, GDP,
     diabetes, alcohol consumption, and disease metrics.
     """
+
     def __init__(self):
         self.region_mapping = {
             "Aruba": "Caribbean small states", "Bermuda": "Caribbean small states",
@@ -71,21 +73,150 @@ class DataProcessor:
             'Socialist Republic of Viet Nam': 'VNM',
             'United Kingdom of Great Britain and Northern Ireland': 'GBR',
             'United Republic of Tanzania': 'TZA',
-            'United States of America': 'USA'
+            'United States of America': 'USA',
+            'Republic of the Philippines': 'PHL',
+            'Republic of the Union of Myanmar': 'MMR',
+            'Republic of Maldives': 'MDV',
+            'Republic of Indonesia': 'IDN',
+            'Kingdom of Tonga': 'TON',
+            'Republic of Vanuatu': 'VUT',
+            "People's Republic of China": 'CHN',
+            'Kingdom of Cambodia': 'KHM',
+            'Independent State of Samoa': 'WSM',
+            'Independent State of Papua New Guinea': 'PNG',
+            'Republic of Kiribati': 'KIR',
+            'Republic of Fiji': 'FJI',
+            'Republic of the Marshall Islands': 'MHL',
+            'Republic of Tajikistan': 'TJK',
+            'Democratic Republic of Timor-Leste': 'TLS',
+            'Republic of Kazakhstan': 'KAZ',
+            'Republic of Bulgaria': 'BGR',
+            'Kingdom of Thailand': 'THA',
+            'Republic of Croatia': 'HRV',
+            'Republic of Albania': 'ALB',
+            'Kyrgyz Republic': 'KGZ',
+            'Republic of Uzbekistan': 'UZB',
+            'Republic of Azerbaijan': 'AZE',
+            'Democratic Socialist Republic of Sri Lanka': 'LKA',
+            'Republic of Armenia': 'ARM',
+            'Republic of Lithuania': 'LTU',
+            'Republic of Estonia': 'EST',
+            'Republic of Belarus': 'BLR',
+            'Republic of Latvia': 'LVA',
+            'Republic of Slovenia': 'SVN',
+            'Principality of Andorra': 'AND',
+            'Kingdom of Belgium': 'BEL',
+            'Slovak Republic': 'SVK',
+            'Republic of Austria': 'AUT',
+            'Republic of Finland': 'FIN',
+            'Republic of Serbia': 'SRB',
+            'Kingdom of Denmark': 'DNK',
+            'Republic of Cyprus': 'CYP',
+            'French Republic': 'FRA',
+            'Republic of Poland': 'POL',
+            'Republic of Singapore': 'SGP',
+            'Swiss Confederation': 'CHE',
+            'Kingdom of Spain': 'ESP',
+            'Kingdom of Sweden': 'SWE',
+            'Portuguese Republic': 'PRT',
+            'Kingdom of Norway': 'NOR',
+            'Kingdom of the Netherlands': 'NLD',
+            'Grand Duchy of Luxembourg': 'LUX',
+            'Republic of Malta': 'MLT',
+            'Republic of Italy': 'ITA',
+            'State of Israel': 'ISR',
+            'Hellenic Republic': 'GRC',
+            'Republic of Iceland': 'ISL',
+            'Federal Republic of Germany': 'DEU',
+            'Republic of Cuba': 'CUB',
+            'Commonwealth of Dominica': 'DMA',
+            'Argentine Republic': 'ARG',
+            'Republic of Chile': 'CHL',
+            'Eastern Republic of Uruguay': 'URY',
+            'Republic of Peru': 'PER',
+            'Republic of Ecuador': 'ECU',
+            'Republic of Suriname': 'SUR',
+            'Republic of Trinidad and Tobago': 'TTO',
+            'Republic of Guatemala': 'GTM',
+            'Republic of Costa Rica': 'CRI',
+            'Republic of El Salvador': 'SLV',
+            'Republic of Guyana': 'GUY',
+            'Republic of Colombia': 'COL',
+            'Republic of Haiti': 'HTI',
+            'Hashemite Kingdom of Jordan': 'JOR',
+            'Republic of Iraq': 'IRQ',
+            'Kingdom of Bahrain': 'BHR',
+            "People's Democratic Republic of Algeria": 'DZA',
+            'Arab Republic of Egypt': 'EGY',
+            'Republic of Paraguay': 'PRY',
+            'Federative Republic of Brazil': 'BRA',
+            'Republic of Panama': 'PAN',
+            'United Mexican States': 'MEX',
+            'Republic of Nicaragua': 'NIC',
+            'Islamic Republic of Afghanistan': 'AFG',
+            'Republic of Yemen': 'YEM',
+            'Republic of Turkey': 'TUR',
+            'Republic of Tunisia': 'TUN',
+            'Republic of Honduras': 'HND',
+            'State of Qatar': 'QAT',
+            'Kingdom of Saudi Arabia': 'SAU',
+            'State of Kuwait': 'KWT',
+            'Sultanate of Oman': 'OMN',
+            'Kingdom of Morocco': 'MAR',
+            'State of Libya': 'LBY',
+            'Lebanese Republic': 'LBN',
+            'Union of the Comoros': 'COM',
+            'Republic of Burundi': 'BDI',
+            'Islamic Republic of Pakistan': 'PAK',
+            'Federal Democratic Republic of Nepal': 'NPL',
+            'Republic of India': 'IND',
+            "People's Republic of Bangladesh": 'BGD',
+            'Republic of Madagascar': 'MDG',
+            'Republic of Guinea-Bissau': 'GNB',
+            'Republic of Sudan': 'SDN',
+            'State of Eritrea': 'ERI',
+            'Kingdom of Bhutan': 'BTN',
+            'Gabonese Republic': 'GAB',
+            'Republic of Botswana': 'BWA',
+            'Republic of South Africa': 'ZAF',
+            'Republic of Chad': 'TCD',
+            'Republic of Kenya': 'KEN',
+            'Republic of Cameroon': 'CMR',
+            'Republic of Benin': 'BEN',
+            'Kingdom of Lesotho': 'LSO',
+            'Republic of Ghana': 'GHA',
+            'Republic of the Niger': 'NER',
+            'Republic of Equatorial Guinea': 'GNQ',
+            'Federal Democratic Republic of Ethiopia': 'ETH',
+            'Democratic Republic of Sao Tome and Principe': 'STP',
+            'Republic of Djibouti': 'DJI',
+            'Republic of Zambia': 'ZMB',
+            'Republic of Liberia': 'LBR',
+            'Republic of the Congo': 'COG',
+            'Republic of Mali': 'MLI',
+            'Islamic Republic of Mauritania': 'MRT',
+            'Republic of Angola': 'AGO',
+            'Republic of Mauritius': 'MUS',
+            'Republic of Rwanda': 'RWA',
+            'Republic of Uganda': 'UGA',
+            'Federal Republic of Somalia': 'SOM',
+            'Republic of Mozambique': 'MOZ',
+            'Republic of Malawi': 'MWI',
+            'Republic of Seychelles': 'SYC',
+            'Republic of Namibia': 'NAM',
+            'Togolese Republic': 'TGO',
+            'Republic of Zimbabwe': 'ZWE',
+            'Republic of Guinea': 'GIN',
+            'Republic of Senegal': 'SEN',
+            'Federal Republic of Nigeria': 'NGA',
+            'Republic of Sierra Leone': 'SLE',
+            'Republic of South Sudan': 'SSD'
         }
 
-
+    # FUNCTIONS FOR GDP, INSUFFICIENT ACTIVITY AND  OBESITY DATA
     def read_file(self, file, columns_to_keep, new_column_names):
         """
          Read and process an Excel file with standardized formatting.
-
-         Args:
-             file (str): Path to the Excel file
-             columns_to_keep (list): List of column names to retain
-             new_column_names (list): New names for the kept columns
-
-         Returns:
-             pd.DataFrame: Processed DataFrame with renamed columns
          """
         df = pd.read_excel(file)
         df.columns = df.iloc[1]
@@ -97,14 +228,6 @@ class DataProcessor:
     def clean_and_transform(self, df, year_column, rate_column):
         """
         Clean and transform data by converting types and removing duplicates.
-
-        Args:
-            df (pd.DataFrame): Input DataFrame
-            year_column (str): Name of the year column
-            rate_column (str): Name of the rate/value column
-
-        Returns:
-            pd.DataFrame: Cleaned DataFrame with proper data types
         """
         df[year_column] = df[year_column].astype(int)
         df[rate_column] = df[rate_column].astype(float)
@@ -120,12 +243,9 @@ class DataProcessor:
         """
               Process and merge physical activity, obesity, and GDP datasets.
               Handles data cleaning, merging, and imputation for these related metrics.
-
-              Returns:
-                  pd.DataFrame: Combined dataset with activity, obesity, and GDP data
               """
-        activity_file = "data/Prevalence of insufficient physical activity among adults aged 18+ years (crude estimate) (%).xlsx"
-        obesity_file = "data/Prevalence of obesity among adults, BMI ≥ 30.xlsx"
+        activity_file = "data/insufficient_physical_activity_data.xlsx"
+        obesity_file = "data/obesity_data.xlsx"
         gdp_file = "data/gdp-per-capita-worldbank.csv"
 
         columns_to_keep = ['Location', 'SpatialDimValueCode', 'Period', 'FactValueNumeric']
@@ -165,45 +285,11 @@ class DataProcessor:
 
         return merged_df
 
-
-    def process_diabetes_alcohol(self, diabetes_data, alcohol_data):
-        """
-        Process and merge diabetes and alcohol consumption datasets.
-        Includes data cleaning, imputation, and regional value filling.
-
-        Args:
-            diabetes_data (pd.DataFrame): Raw diabetes dataset
-            alcohol_data (pd.DataFrame): Raw alcohol consumption dataset
-
-        Returns:
-            pd.DataFrame: Merged dataset with processed diabetes and alcohol data
-        """
-        diabetes_processed = self._diabetes_column_processing(diabetes_data)
-        diabetes_processed = self._adding_missing_years(diabetes_processed)
-        diabetes_processed = self._impute_diabetes_data(diabetes_processed)
-
-        # Process alcohol data
-        alcohol_processed = alcohol_data.melt(id_vars=['Location', 'Code'],
-                                              var_name='Year',
-                                              value_name='Alcohol_Value')
-        alcohol_processed = self._convert_year_to_int(alcohol_processed)
-        alcohol_processed = self._remove_wrong_countries(alcohol_processed)
-        alcohol_processed = self._fill_missing_values_with_regional(alcohol_processed,
-                                                                    self.region_mapping)
-        alcohol_processed = self._impute_alcohol_data(alcohol_processed)
-        merged_data = diabetes_processed.merge(alcohol_processed, on=['Location', 'Year', 'Code'], how='outer')
-        return merged_data
-
+    # FUNCTIONS FOR DIABETES AND ALCOHOL DATASETS
     def _diabetes_column_processing(self, df):
         """
         Process diabetes-specific columns and encode categorical variables.
         Removes unnecessary columns and standardizes data format.
-
-        Args:
-            df (pd.DataFrame): Raw diabetes dataset
-
-        Returns:
-            pd.DataFrame: Processed diabetes dataset with cleaned columns
         """
         df = df.rename(columns={
             'Country/Region/World': 'Location',
@@ -226,12 +312,6 @@ class DataProcessor:
         """
         Add missing years to dataset with placeholder values.
         Fills gaps in time series data from 1960 to 1990.
-
-        Args:
-            df (pd.DataFrame): Input dataset with year gaps
-
-        Returns:
-            pd.DataFrame: Dataset with added years and NaN values
         """
         years_1980_to_1989 = list(range(1960, 1990))
         countries = df['Location'].unique()
@@ -260,12 +340,6 @@ class DataProcessor:
         """
         Impute missing diabetes prevalence data using polynomial fitting.
         Fits a second-degree polynomial to existing data points.
-
-        Args:
-            df (pd.DataFrame): Dataset with missing diabetes values
-
-        Returns:
-            pd.DataFrame: Dataset with imputed diabetes values
         """
         known_data = df[df["Prevalence of diabetes (18+ years)"].notnull()]
         known_years = known_data["Year"]
@@ -279,69 +353,9 @@ class DataProcessor:
     def _convert_year_to_int(self, df, column_name='Year'):
         """
         Convert year column to integer type.
-
-        Args:
-            df (pd.DataFrame): Input DataFrame
-            column_name (str): Name of year column
-
-        Returns:
-            pd.DataFrame: DataFrame with integer year column
         """
         df[column_name] = df[column_name].astype(int)
         return df
-
-    def _remove_wrong_countries(self, df, column_name='Location'):
-        """Remove non-country entries from the dataset"""
-        wrong_countries = [
-            'The Arab World', 'Central Europe and the Baltics', 'Channel Islands',
-            'Caribbean small states', 'East Asia and Pacific (excluding high income)',
-            'Early-demographic dividend', 'East Asia and Pacific',
-            'Europe and Central Asia (excluding high income)', 'Europe and Central Asia',
-            'Euro area', 'European Union', 'Fragile and conflict-affected situations',
-            'High income', 'Heavily indebted poor countries (HIPC)', 'IBRD only',
-            'IBRD and IDA', 'IDA total', 'IDA blend', 'IDA only', 'Not classified',
-            'Latin America and the Caribbean (excluding high income)',
-            'Latin America and the Caribbean', 'Least developed countries: UN classification',
-            'Low income', 'Lower middle income', 'Low and middle income',
-            'Late-demographic dividend', 'Middle East and North Africa',
-            'Middle income', 'Middle East and North Africa (excluding high income)',
-            'North America', 'OECD members', 'Other small states', 'Pre-demographic dividend',
-            'Pacific island small states', 'Post-demographic dividend', 'South Asia',
-            'Sub-Saharan Africa (excluding high income)', 'Sub-Saharan Africa',
-            'Small states', 'East Asia and Pacific (IBRD and IDA)',
-            'Europe and Central Asia (IBRD and IDA)', 'Latin America and the Caribbean (IBRD and IDA)',
-            'Middle East and North Africa (IBRD and IDA)', 'South Asia (IBRD and IDA)',
-            'Sub-Saharan Africa (IBRD and IDA)', 'Upper middle income', 'World'
-        ]
-        df = df[~df[column_name].isin(wrong_countries)]
-        df.reset_index(drop=True, inplace=True)
-        return df
-
-    def _fill_missing_values_with_regional(self, df, region_mapping,
-                                           value_column='Alcohol_Value',
-                                           location_column='Location',
-                                           year_column='Year'):
-        """Fill missing values using regional data"""
-        df_filled = df.copy()
-
-        for country, region in region_mapping.items():
-            if country in df_filled[location_column].values:
-                country_data = df_filled[df_filled[location_column] == country]
-                missing_years = country_data[country_data[value_column].isnull()][year_column].unique()
-
-                if len(missing_years) > 0:
-                    regional_data = df_filled[df_filled[location_column] == region]
-                    regional_values = \
-                    regional_data[regional_data[year_column].isin(missing_years)].set_index(year_column)[value_column]
-
-                    for year in missing_years:
-                        df_filled.loc[
-                            (df_filled[location_column] == country) &
-                            (df_filled[year_column] == year),
-                            value_column
-                        ] = regional_values.get(year)
-
-        return df_filled
 
     def _impute_alcohol_data(self, alcohol_data):
         """Impute missing alcohol data using KNN"""
@@ -373,20 +387,165 @@ class DataProcessor:
 
         return alcohol_data
 
+    def impute_with_polynomial(self, df, year_col, target_col, degree=2):
+        """
+        Impute missing values using polynomial regression on time series.
+        """
+        known_data = df[df[target_col].notnull()]
+        known_years = known_data[year_col]
+        known_values = known_data[target_col]
 
+        missing_data = df[df[target_col].isnull()]
+        missing_years = missing_data[year_col]
+
+        # Fit a polynomial to the known data
+        poly = Polynomial.fit(known_years, known_values, deg=degree)
+
+        # Predict missing values
+        predicted_values = poly(missing_years)
+
+        # Fill in the missing values
+        df.loc[df[target_col].isnull(), target_col] = predicted_values
+        return df
+
+    def process_diabetes_alcohol(self, diabetes_data, alcohol_data):
+        """
+        Process and merge diabetes and alcohol consumption datasets.
+        Includes data cleaning, imputation, and regional value filling.
+        """
+        diabetes_processed = self._diabetes_column_processing(diabetes_data)
+        diabetes_processed = self._adding_missing_years(diabetes_processed)
+        diabetes_processed = self._impute_diabetes_data(diabetes_processed)
+
+        # Process alcohol data
+        alcohol_processed = alcohol_data.melt(id_vars=['Location', 'Code'], var_name='Year', value_name='Alcohol_Value')
+        alcohol_processed = self._convert_year_to_int(alcohol_processed)
+        alcohol_processed = self._remove_wrong_countries(alcohol_processed)
+        alcohol_processed = self._fill_missing_values_with_regional(alcohol_processed,
+                                                                    self.region_mapping)
+        alcohol_processed = self._impute_alcohol_data(alcohol_processed)
+        merged_data = diabetes_processed.merge(alcohol_processed, on=['Location', 'Year', 'Code'], how='outer')
+        return merged_data
+
+    def _remove_wrong_countries(self, df, column_name='Location'):
+        """Remove non-country entries from the dataset"""
+        wrong_countries = [
+            'The Arab World', 'Central Europe and the Baltics', 'Channel Islands',
+            'Caribbean small states', 'East Asia and Pacific (excluding high income)',
+            'Early-demographic dividend', 'East Asia and Pacific',
+            'Europe and Central Asia (excluding high income)', 'Europe and Central Asia',
+            'Euro area', 'European Union', 'Fragile and conflict-affected situations',
+            'High income', 'Heavily indebted poor countries (HIPC)', 'IBRD only',
+            'IBRD and IDA', 'IDA total', 'IDA blend', 'IDA only', 'Not classified',
+            'Latin America and the Caribbean (excluding high income)',
+            'Latin America and the Caribbean', 'Least developed countries: UN classification',
+            'Low income', 'Lower middle income', 'Low and middle income',
+            'Late-demographic dividend', 'Middle East and North Africa',
+            'Middle income', 'Middle East and North Africa (excluding high income)',
+            'North America', 'OECD members', 'Other small states', 'Pre-demographic dividend',
+            'Pacific island small states', 'Post-demographic dividend', 'South Asia',
+            'Sub-Saharan Africa (excluding high income)', 'Sub-Saharan Africa',
+            'Small states', 'East Asia and Pacific (IBRD and IDA)',
+            'Europe and Central Asia (IBRD and IDA)', 'Latin America and the Caribbean (IBRD and IDA)',
+            'Middle East and North Africa (IBRD and IDA)', 'South Asia (IBRD and IDA)',
+            'Sub-Saharan Africa (IBRD and IDA)', 'Upper middle income', 'World'
+        ]
+        df = df[~df[column_name].isin(wrong_countries)]
+        df.reset_index(drop=True, inplace=True)
+        return df
+
+    def _fill_missing_values_with_regional(self, df, region_mapping, value_column='Alcohol_Value',
+                                           location_column='Location', year_column='Year'):
+        """Fill missing values using regional data"""
+        df_filled = df.copy()
+
+        for country, region in region_mapping.items():
+            if country in df_filled[location_column].values:
+                country_data = df_filled[df_filled[location_column] == country]
+                missing_years = country_data[country_data[value_column].isnull()][year_column].unique()
+
+                if len(missing_years) > 0:
+                    regional_data = df_filled[df_filled[location_column] == region]
+                    regional_values = \
+                        regional_data[regional_data[year_column].isin(missing_years)].set_index(year_column)[
+                            value_column]
+
+                    for year in missing_years:
+                        df_filled.loc[
+                            (df_filled[location_column] == country) &
+                            (df_filled[year_column] == year),
+                            value_column
+                        ] = regional_values.get(year)
+
+        return df_filled
+
+    # FUNCTIONS FOR HDB PREVALENCE, INCIDENCE AND MORTALITY RATE DATA
+    def encode_categorical_columns(self, df, columns):
+        encoder = LabelEncoder()
+        for col in columns:
+            df[col] = encoder.fit_transform(df[col].astype(str))
+        return df
+
+    def _impute_with_polynomial_fit(self, df, target_column, predictor_columns, degree=2):
+        """Imputes missing values in the target column using polynomial regression."""
+
+        if not isinstance(df, pd.DataFrame):
+            raise TypeError(f"Expected a DataFrame, but got {type(df)} instead.")
+
+        if target_column not in df.columns:
+            raise ValueError(f"Column '{target_column}' not found in DataFrame.")
+
+        if df[target_column].isnull().sum() == 0:
+            print(f"No missing values in '{target_column}'. Skipping imputation.")
+            return df  # No need to modify anything
+
+        if any(col not in df.columns for col in predictor_columns):
+            raise ValueError(f"Predictor columns {predictor_columns} not found in DataFrame.")
+
+        # Separate rows with missing and non-missing values
+        missing_mask = df[target_column].isnull()
+        df_valid = df.dropna(subset=predictor_columns)
+
+        if df_valid.empty:
+            print(f"Skipping imputation for '{target_column}' due to missing predictors.")
+            return df
+
+        # Train polynomial regression model
+        X_train = df_valid.loc[~missing_mask, predictor_columns]
+        y_train = df_valid.loc[~missing_mask, target_column]
+
+        poly = PolynomialFeatures(degree=degree)
+        X_train_poly = poly.fit_transform(X_train)
+
+        model = LinearRegression()
+        model.fit(X_train_poly, y_train)
+
+        # Predict missing values
+        X_missing_poly = poly.transform(df.loc[missing_mask, predictor_columns])
+        df.loc[missing_mask, target_column] = np.maximum(model.predict(X_missing_poly), 0)  # No negatives
+
+        return df
+
+    def get_country_code(self, country_name):
+        """Returns the ISO Alpha-3 country code given a country name, using a dictionary first and falling back to pycountry."""
+        # Normalize the country name format
+        country_name_normalized = country_name.strip().title()
+
+        # Check if the country name exists in the predefined dictionary
+        if country_name_normalized in self.country_code_dict:
+            return self.country_code_dict[country_name_normalized]
+
+        # Fallback to pycountry if not found in the dictionary
+        try:
+            country = pycountry.countries.lookup(country_name_normalized)
+            return country.alpha_3
+        except LookupError:
+            return None
 
     def process_disease_metrics(self, incidence_data, mortality_data, prevalence_data):
         """
            Process disease metrics including incidence, mortality, and prevalence.
            Standardizes column names and merges multiple disease metrics datasets.
-
-           Args:
-               incidence_data (pd.DataFrame): Disease incidence data
-               mortality_data (pd.DataFrame): Disease mortality data
-               prevalence_data (pd.DataFrame): Disease prevalence data
-
-           Returns:
-               pd.DataFrame: Combined disease metrics dataset
            """
         dfs = {
             'incidence': (incidence_data, 'IncidenceRate'),
@@ -398,97 +557,34 @@ class DataProcessor:
         for name, (df, rate_col) in dfs.items():
             processed_df = df.rename(columns={
                 'location_name': 'Country',
-                'sex_name': 'Sex',
+                'sex_name': 'Gender',
+                'age_name': 'Age_Group',
                 'year': 'Year',
                 'val': rate_col
             })
-            processed_df = processed_df[['Country', 'Sex', 'Year', 'age_name', rate_col]]
+            processed_df = processed_df[['Country', 'Gender', 'Year', 'Age_Group', rate_col]]
             processed_dfs.append(processed_df)
 
         # Merge datasets
         df_combined = pd.merge(processed_dfs[0], processed_dfs[1],
-                               on=['Country', 'Year', 'Sex', 'age_name'],
+                               on=['Country', 'Year', 'Gender', 'Age_Group'],
                                how='outer')
         df_combined = pd.merge(df_combined, processed_dfs[2],
-                               on=['Country', 'Year', 'Sex', 'age_name'],
+                               on=['Country', 'Year', 'Gender', 'Age_Group'],
                                how='outer')
+
+        df_combined = self.encode_categorical_columns(df_combined, ['Gender', 'Age_Group'])
 
         # Impute missing values
         for rate in ['IncidenceRate', 'PrevalenceRate', 'MortalityRate']:
             df_combined = self._impute_with_polynomial_fit(df_combined, rate, ['Year'])
 
         # Add country codes
-        df_combined['Country'] = df_combined['Country'].str.strip() 
+        df_combined['Country'] = df_combined['Country'].astype(str).str.strip()
         df_combined['Country_Code'] = df_combined['Country'].apply(self.get_country_code)
-
         return df_combined
 
-    def _impute_with_polynomial_fit(self, df, target_column, predictor_columns, degree=2):
-        """
-        Impute missing values using polynomial regression.
-
-        Args:
-            df (pd.DataFrame): Input DataFrame
-            target_column (str): Column to impute
-            predictor_columns (list): Columns to use as predictors
-            degree (int): Degree of polynomial fit
-
-        Returns:
-            pd.DataFrame: DataFrame with imputed values
-        """
-        known_data = df[df[target_column].notna()]
-        missing_data = df[df[target_column].isna()]
-
-        if missing_data.empty:
-            print(f"No missing values found in '{target_column}'. Skipping imputation.")
-            return df
-
-        poly = PolynomialFeatures(degree=degree)
-        X_known = poly.fit_transform(known_data[predictor_columns])
-        X_missing = poly.transform(missing_data[predictor_columns])
-
-        model = LinearRegression()
-        model.fit(X_known, known_data[target_column])
-
-        df.loc[df[target_column].isna(), target_column] = model.predict(X_missing)
-        return df
-
-    def get_country_code(self,country_name):
-        """Returns the ISO Alpha-3 country code given a country name."""
-        # First check if the country name is in the manual mapping
-        if country_name in self.country_code_dict:
-            return self.country_code_dict[country_name]
-        else:
-            # If not, use pycountry to get the country code
-            try:
-                country = pycountry.countries.get(name=country_name)
-                if country:
-                    return country.alpha_3  # Return Alpha-3 code
-                else:
-                    return None
-            except KeyError:
-                return None
-
-
-    def process_overweight_health(self, overweight_data, world_health_data, life_expectancy_data):
-        """
-        Process and merge overweight, health, and life expectancy datasets.
-
-        Args:
-            overweight_data (pd.DataFrame): Overweight prevalence data
-            world_health_data (pd.DataFrame): World health indicators
-            life_expectancy_data (pd.DataFrame): Life expectancy data
-
-        Returns:
-            pd.DataFrame: Merged health indicators dataset
-        """
-        cleaned_overweight = self._clean_overweight_data(overweight_data)
-        cleaned_world_health = self._clean_world_health_data(world_health_data)
-        processed_life_expectancy = self._process_supplemental_life_expectancy(life_expectancy_data)
-
-        return self._merge_and_clean_datasets(cleaned_overweight,
-                                              cleaned_world_health,
-                                              processed_life_expectancy)
+    # FUNCTIONS FOR OVERWEIGHT AND WORLD HEALTH DATASETS
 
     def _clean_overweight_data(self, df):
         """Clean and preprocess the overweight dataset"""
@@ -564,7 +660,7 @@ class DataProcessor:
     def _merge_and_clean_datasets(self, overweight_df, world_df, life_expectancy_df):
         """Merge all datasets and perform final cleaning"""
         # Initial merge of overweight and world health data
-        overweight_df['Year'] =  overweight_df['Year'].astype(int)
+        overweight_df['Year'] = overweight_df['Year'].astype(int)
         merged_df = pd.merge(
             overweight_df,
             world_df,
@@ -593,41 +689,23 @@ class DataProcessor:
 
         return merged_df
 
-    def impute_with_polynomial(self, df, year_col, target_col, degree=2):
+    def process_overweight_health(self, overweight_data, world_health_data, life_expectancy_data):
         """
-        Impute missing values using polynomial regression on time series.
-
-        Args:
-            df (pd.DataFrame): Input DataFrame
-            year_col (str): Name of year column
-            target_col (str): Column to impute
-            degree (int): Degree of polynomial fit
-
-        Returns:
-            pd.DataFrame: DataFrame with imputed values
+        Process and merge overweight, health, and life expectancy datasets.
         """
-        known_data = df[df[target_col].notnull()]
-        known_years = known_data[year_col]
-        known_values = known_data[target_col]
+        cleaned_overweight = self._clean_overweight_data(overweight_data)
+        cleaned_world_health = self._clean_world_health_data(world_health_data)
+        processed_life_expectancy = self._process_supplemental_life_expectancy(life_expectancy_data)
 
-        missing_data = df[df[target_col].isnull()]
-        missing_years = missing_data[year_col]
-
-        # Fit a polynomial to the known data
-        poly = Polynomial.fit(known_years, known_values, deg=degree)
-
-        # Predict missing values
-        predicted_values = poly(missing_years)
-
-        # Fill in the missing values
-        df.loc[df[target_col].isnull(), target_col] = predicted_values
-        return df
-
+        return self._merge_and_clean_datasets(cleaned_overweight,
+                                              cleaned_world_health,
+                                              processed_life_expectancy)
 
 
 def main():
     # Create a new directory named 'datasets'
     os.mkdir('datasets')
+
     """Main function to run all data processing"""
     # Initialize processor
     processor = DataProcessor()
@@ -636,6 +714,7 @@ def main():
         # 1. Process Activity, Obesity, and GDP data
         print("Processing Activity, Obesity, and GDP data...")
         activity_obesity_gdp_df = processor.process_activity_obesity_gdp()
+
         activity_obesity_gdp_df.to_csv('datasets/processed_activity_obesity_gdp.csv', index=False)
         print("Activity, Obesity, and GDP data processing completed.")
 
@@ -645,9 +724,12 @@ def main():
         alcohol_data = pd.read_excel('data/alcohol_consumption.xlsx')
 
         diabetes_alcohol = processor.process_diabetes_alcohol(diabetes_data, alcohol_data)
-        diabetes_alcohol_df = processor.impute_with_polynomial(diabetes_alcohol, year_col="Year", target_col="Alcohol_Value", degree=2)
         diabetes_alcohol_df = processor.impute_with_polynomial(diabetes_alcohol, year_col="Year",
-                                                               target_col="Prevalence of diabetes (18+ years)", degree=2)
+                                                               target_col="Alcohol_Value", degree=2)
+        diabetes_alcohol_df = processor.impute_with_polynomial(diabetes_alcohol, year_col="Year",
+                                                               target_col="Prevalence of diabetes (18+ years)",
+                                                               degree=2)
+
         diabetes_alcohol_df.to_csv('datasets/processed_diabetes_alcohol.csv', index=False)
         print("Diabetes and Alcohol data processing completed.")
 
