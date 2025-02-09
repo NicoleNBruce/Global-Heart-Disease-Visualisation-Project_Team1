@@ -3,16 +3,7 @@ from sklearn.impute import KNNImputer
 from numpy.polynomial.polynomial import Polynomial
 import numpy as np
 import pycountry
-
-# Manual country code mapping for missing values
-country_code_mapping = {
-    'Brunei': 'BRN', 'Congo, Dem. Rep.': 'COD', 'Congo, Rep.': 'COG',
-    "Cote d'Ivoire": 'CIV', 'Hong Kong, China': 'HKG', 'Korea, Dem. Rep.': 'PRK',
-    'Korea, Rep.': 'KOR', 'Libya': 'LBY', 'Macao, China': 'MAC',
-    'Micronesia, Fed. Sts.': 'FSM', 'Moldova': 'MDA', 'Slovak Republic': 'SVK',
-    'Syria': 'SYR', 'Tanzania': 'TZA', 'United States': 'USA',
-    'West Bank and Gaza': 'PSE', 'Yemen, Rep.': 'YEM'
-}
+from dictionary import country_code_mapping
 
 def get_country_code(country_name):
     """Returns the ISO Alpha-3 country code given a country name."""
