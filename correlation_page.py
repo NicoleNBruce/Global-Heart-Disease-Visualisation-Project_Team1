@@ -27,7 +27,7 @@ tooltip_style = {
 }
 
 #Dataset
-data = pd.read_parquet('dataset/FINAL_MERGED_DATA_reimputed.parquet', engine="pyarrow")
+data = pd.read_parquet("dataset/FINAL_MERGED_DATA_reimputed.parquet", engine="pyarrow")
 
 # Unique values for filters
 years = sorted(data['Year'].unique())
