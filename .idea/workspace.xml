@@ -2,14 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="597849d5-ac84-4359-9c32-010cf78e1c51" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Heart Disease Visualisation Week 3.docx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/choropleth.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/correlation_page.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/dataset/FINAL_MERGED_DATA_reimputed.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/metric_analysis.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/overview.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
