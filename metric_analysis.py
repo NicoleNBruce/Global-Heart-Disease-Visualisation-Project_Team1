@@ -6,7 +6,7 @@ import plotly.express as px
 import pycountry_convert as pc
 from dash.dependencies import Input, Output
 # Load dataset
-df_main = pd.read_csv('dataset/FINAL_MERGED_DATA_reimputed.csv')
+df_main = pd.read_parquet('dataset/FINAL_MERGED_DATA_reimputed.parquet', engine='pyarrow')
 # Function to map country to continent
 def country_to_continent(country_name):
     try:

@@ -16,7 +16,7 @@ app = dash.Dash(
 app.config.suppress_callback_exceptions = True
 
 # Load data
-df = pd.read_csv('dataset/FINAL_MERGED_DATA_reimputed.csv')
+df = pd.read_parquet('dataset/FINAL_MERGED_DATA_reimputed.parquet', engine='pyarrow')
 
 
 def create_overview_layout():
