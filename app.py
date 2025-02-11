@@ -83,10 +83,10 @@ server = app.server
 
 # Configure caching
 cache = Cache(app.server, config={
-    'CACHE_TYPE': 'simple',  # In-memory caching
-    'CACHE_DEFAULT_TIMEOUT': 300  # Cache timeout in seconds (5 minutes)
+    'CACHE_TYPE': 'redis',
+    'CACHE_REDIS_URL': 'redis://red-culnokin91rc73efq2kg:6379',
+    'CACHE_DEFAULT_TIMEOUT': 300
 })
-
 # Sidebar with navigation links
 sidebar = html.Div(
     [
