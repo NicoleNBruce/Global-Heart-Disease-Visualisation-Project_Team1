@@ -111,6 +111,16 @@ def get_metric_analysis_layout():
 
         dbc.Row([
             # Plot 4: Average Mortality Per Country
+            dbc.Col(dbc.Card([dbc.CardHeader("Average Mortality Rate Per Country", style=card_font),
+                              dbc.CardBody([
+                                  dcc.Dropdown(id='average-mortality-year-dropdown', options=[{"label": str(year), "value": year}
+                             for year in years], value=years[0], clearable=False),
+                                  dcc.Graph(id='average-mortality-country')
+                              ])], className="shadow-sm border"), width=12, className="mb-4"),
+        ]),
+
+        dbc.Row([
+            # Plot 5: Risk Factor Analysis per ccontinent
             dbc.Col(dbc.Card([dbc.CardHeader("Risk Factors Analysis by Continent", style=card_font ),
                               dbc.CardBody([
                                   dcc.Dropdown(id='risk-factor-dropdown', options=[
