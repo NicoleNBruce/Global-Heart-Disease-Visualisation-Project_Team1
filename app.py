@@ -152,6 +152,7 @@ app.layout = html.Div([
     Input("url", "pathname")
 )
 def display_page(pathname):
+    """Updates the page content based on the selected navigation link."""
     if pathname == "/choropleth":
         return get_choropleth_layout(df)
     elif pathname == "/metric-analysis":
@@ -171,6 +172,7 @@ def display_page(pathname):
     prevent_initial_call=True
 )
 def toggle_sidebar(n):
+    """Handles toggling the sidebar visibility."""
     if n and n % 2 == 1:
         sidebar_style = SIDEBAR_HIDDEN
         toggle_style = TOGGLE_STYLE_HIDDEN
@@ -191,4 +193,4 @@ register_callbacks_corr(app, cache)
 
 # Run the app
 if __name__ == "__main__":
-    app.run_server(debug=True, port=8503)
+    app.run_server(debug=True,host="0.0.0.0", port=8503)

@@ -25,13 +25,39 @@ tooltip_style = {
     "fontSize": "14px"
 }
 
+metric_labels = {
+    'MortalityRate': 'Mortality Rate (per 100,000)',
+    'IncidenceRate': 'Incidence Rate (per 100,000)',
+    'PrevalenceRate': 'Prevalence Rate (per 100,000)',
+    'GDP': 'GDP per Capita (USD)',
+    'Health_Expenditure (% of GDP)': 'Healthcare Expenditure (% of GDP)'
+}
+
 
 def alpha3_to_alpha2(alpha3_code):
+    """
+        Convert a three-letter country code (ISO Alpha-3) to a two-letter country code (ISO Alpha-2).
+
+        Parameters:
+        alpha3_code (str): Three-letter country code.
+
+        Returns:
+        str: Two-letter country code or None if not found.
+        """
     country = pycountry.countries.get(alpha_3=alpha3_code)
     return country.alpha_2 if country else None
 
 
 def get_region(country_code):
+    """
+        Retrieve the region (continent) of a given country code.
+
+        Parameters:
+        country_code (str): Two-letter or three-letter country code.
+
+        Returns:
+        str: Continent name or 'Unknown Region' if not found.
+        """
     if country_code in manual_region_mapping:
         return manual_region_mapping[country_code]
     if len(country_code) == 3:
@@ -40,6 +66,23 @@ def get_region(country_code):
 
 
 def create_choropleth(df, year, continent, metric, age_group, gender, economic_indicator=None):
+    """
+        Generate an interactive choropleth map based on health or economic metrics.
+
+        Parameters:
+        df (DataFrame): Input data containing health metrics.
+        year (int): Selected year for visualization.
+        continent (str): Continent filter.
+        metric (str): Health metric to visualize.
+        age_group (str): Selected age group filter.
+        gender (str): Selected gender filter.
+        economic_indicator (str, optional): Economic metric to visualize instead of health metrics.
+
+        Returns:
+        plotly.graph_objects.Figure: Choropleth map visualization.
+        """
+
+    # Data filtering based on user selections
     filtered_df = df[df['Year'] == year]
     if continent != "All":
         filtered_df = filtered_df[filtered_df['Region'] == continent]
@@ -48,14 +91,7 @@ def create_choropleth(df, year, continent, metric, age_group, gender, economic_i
     if gender != "All":
         filtered_df = filtered_df[filtered_df['Gender'] == gender]
 
-    metric_labels = {
-        'MortalityRate': 'Mortality Rate (per 100,000)',
-        'IncidenceRate': 'Incidence Rate (per 100,000)',
-        'PrevalenceRate': 'Prevalence Rate (per 100,000)',
-        'GDP': 'GDP per Capita (USD)',
-        'Health_Expenditure (% of GDP)': 'Healthcare Expenditure (% of GDP)'
-    }
-
+    # Determine which metric to use and the color scale
     if economic_indicator and economic_indicator != 'None':
         selected_metric = economic_indicator
         color_scale = 'Pubu'
@@ -99,6 +135,7 @@ def create_choropleth(df, year, continent, metric, age_group, gender, economic_i
         axis=1
     )
 
+    # Choropleth map generation
     fig = px.choropleth(
         filtered_df,
         locations='Country_Code',
@@ -142,6 +179,21 @@ def create_choropleth(df, year, continent, metric, age_group, gender, economic_i
 
 
 def create_barplot(df, year, continent, metric, age_group, gender):
+    """
+    Create a horizontal bar plot to show the top 10 countries based on a selected metric.
+
+    Parameters:
+    df (DataFrame): Input data containing health metrics.
+    year (int): Selected year for visualization.
+    continent (str): Continent filter.
+    metric (str): Health metric to visualize.
+    age_group (str): Selected age group filter.
+    gender (str): Selected gender filter.
+
+    Returns:
+    plotly.graph_objects.Figure: Bar plot visualization.
+    """
+
     filtered_df = df[df['Year'] == year]
     if continent != "All":
         filtered_df = filtered_df[filtered_df['Region'] == continent]
@@ -161,7 +213,6 @@ def create_barplot(df, year, continent, metric, age_group, gender):
     top_10_countries = (
         filtered_df.dropna(subset=[metric])
         .nlargest(10, metric)[['Country', metric, 'Region', 'GDP']]
-        # Sort in ascending order for better bar chart visualization
         .sort_values(metric, ascending=True)
     )
 
@@ -189,7 +240,7 @@ def create_barplot(df, year, continent, metric, age_group, gender):
         orientation='h',
         color='Country',
         custom_data=['hover_text'],  # Add custom hover data
-        title=f'Top 10 Countries - {metric.replace("_", " ").title()} ({year})'
+        title=f'Top 10 Countries - {metric_labels[metric]} ({year})'
     )
 
     fig.update_traces(
@@ -200,7 +251,7 @@ def create_barplot(df, year, continent, metric, age_group, gender):
     fig.update_layout(
         height=700,
         title_x=0.5,
-        xaxis_title=f'{metric.replace("_", " ").title()}',
+        xaxis_title=metric_labels[metric],
         yaxis_title='Country',
         bargap=0.2,
         template='plotly_white',
@@ -216,7 +267,22 @@ def create_barplot(df, year, continent, metric, age_group, gender):
 
 
 def create_scatter_plot(df, year, continent, metric, economic_indicator, age_group, gender):
-    # Filter data based on user selections
+    """
+    Generate a scatter plot to analyze the correlation between a health metric and an economic indicator.
+
+    Parameters:
+    df (DataFrame): Input data containing health and economic metrics.
+    year (int): Selected year for visualization.
+    continent (str): Continent filter.
+    metric (str): Health metric for the Y-axis.
+    economic_indicator (str): Economic indicator for the X-axis.
+    age_group (str): Selected age group filter.
+    gender (str): Selected gender filter.
+
+    Returns:
+    plotly.graph_objects.Figure: Scatter plot visualization.
+    """
+    # Filter data
     filtered_df = df[df['Year'] == year]
     if continent != "All":
         filtered_df = filtered_df[filtered_df['Region'] == continent]
@@ -225,34 +291,33 @@ def create_scatter_plot(df, year, continent, metric, economic_indicator, age_gro
     if gender != "All":
         filtered_df = filtered_df[filtered_df['Gender'] == gender]
 
-    # Ensure data is available and drop NaNs
+    # Handle data availability
     filtered_df = filtered_df.dropna(subset=[metric, economic_indicator])
-
     if filtered_df.empty:
         return px.scatter(title=f"No data available for selected filters")
 
-    # Create scatter plot
+    # Create scatter plot with formatted labels
     fig = px.scatter(
         filtered_df,
         x=economic_indicator,
         y=metric,
         color="Region",
         hover_name="Country",
-        title=f'Correlation: {economic_indicator.replace("_", " ")} vs {metric.replace("_", " ")} ({year})',
-        trendline="ols",  # Ordinary Least Squares (OLS) regression line
+        title=f'Correlation: {metric_labels[economic_indicator]} vs {metric_labels[metric]} ({year})',
+        trendline="ols",
         labels={
-            economic_indicator: economic_indicator.replace("_", " ").title(),
-            metric: metric.replace("_", " ").title()
+            economic_indicator: metric_labels[economic_indicator],
+            metric: metric_labels[metric]
         }
     )
 
-    # Improve layout
+    # Update layout with consistent formatting
     fig.update_layout(
         height=700,
         title_x=0.5,
         template='plotly_white',
-        xaxis_title=f"{economic_indicator.replace('_', ' ')}",
-        yaxis_title=f"{metric.replace('_', ' ')}",
+        xaxis_title=metric_labels[economic_indicator],
+        yaxis_title=metric_labels[metric],
         hoverlabel=dict(
             bgcolor="white",
             font_size=14,
@@ -265,34 +330,111 @@ def create_scatter_plot(df, year, continent, metric, economic_indicator, age_gro
 
 
 def get_choropleth_layout(df):
+    """
+    Generate the layout for the choropleth map dashboard, including filter dropdowns and graph components.
+
+    Parameters:
+    df (DataFrame): Input dataset containing available options for dropdowns.
+
+    Returns:
+    html.Div: Dash HTML layout containing filters, maps, and visualizations.
+    """
+
     starting_year = df['Year'].min()
+
+    # Common styles
+    map_style = {
+        'width': '100%',
+        'height': '700px',
+        'overflow': 'hidden',
+        'margin-bottom': '2rem'
+    }
 
     dropdown_style = {
         'className': 'responsive-dropdown fw-bold mb-2',
         'clearable': False
     }
 
+    header_style = {
+        "fontSize": "clamp(1.7rem, 4vw, 2.7rem)",
+        "marginBottom": "1rem",
+        "background": "linear-gradient(135deg, #17202A 0%, #2C3E50 100%)",
+        "color": "white",
+        "fontFamily": "'Segoe UI', system-ui, -apple-system, sans-serif",
+        "lineHeight": "1.4"
+    }
+
+    # Dropdown configurations
+    dropdowns = [
+        {
+            'label': "Select Region",
+            'id': 'continent-dropdown',
+            'options': [{'label': 'All', 'value': 'All'}] +
+                       [{'label': region, 'value': region} for region in df['Region'].unique()],
+            'value': 'All',
+            'tooltip': "Choose a region to filter data geographically."
+        },
+        {
+            'label': "Select Year",
+            'id': 'year-dropdown',
+            'options': [{'label': str(year), 'value': year} for year in sorted(df['Year'].unique())],
+            'value': starting_year,
+            'tooltip': "Select the year of interest for the data."
+        },
+        {
+            'label': "Select Health Metric",
+            'id': 'metric-dropdown',
+            'options': [
+                {'label': 'Mortality Rate', 'value': 'MortalityRate'},
+                {'label': 'Incidence Rate', 'value': 'IncidenceRate'},
+                {'label': 'Prevalence Rate', 'value': 'PrevalenceRate'}
+            ],
+            'value': 'PrevalenceRate',
+            'tooltip': "Select a health-related metric for visualization."
+        },
+        {
+            'label': "Select Economic Indicator",
+            'id': 'economic-indicator-dropdown',
+            'options': [
+                {'label': 'None', 'value': 'None'},
+                {'label': 'GDP per capita', 'value': 'GDP'},
+                {'label': 'Health Expenditure (% of GDP)', 'value': 'Health_Expenditure (% of GDP)'}
+            ],
+            'value': 'None',
+            'tooltip': "Selecting an economic indicator will replace the health metric map with the chosen economic data."
+        },
+        {
+            'label': "Select Age Group",
+            'id': 'age-group-dropdown',
+            'options': [{'label': age, 'value': age} for age in sorted(df['Age_Group'].unique()) if
+                        age != 'No Age Group'],
+            'value': 'Age-standardized',
+            'tooltip': "Select an age group to filter data accordingly. 'Age-standardized' includes all age groups."
+        },
+        {
+            'label': "Select Gender",
+            'id': 'gender-dropdown',
+            'options': [
+                {'label': 'All', 'value': 'All'},
+                {'label': 'Female', 'value': 'Female'},
+                {'label': 'Male', 'value': 'Male'}
+            ],
+            'value': 'All',
+            'tooltip': "Choose 'All' for both genders or filter by 'Male' or 'Female'."
+        }
+    ]
+
     return html.Div([
-            html.H3(
-        [
-            "Heart Disease Atlas ",
-           
-        ],
+        # Header
+        html.H3(
+            "Heart Disease Atlas",
             className="text-center fw-semibold mb-3 p-3 rounded shadow-sm",
-            style={
-                "fontSize": "clamp(1.7rem, 4vw, 2.7rem)",
-                "marginBottom": "1rem",
-                "background": "linear-gradient(135deg, #17202A 0%, #2C3E50 100%)",
-                "color": "white",
-                "fontFamily": "'Segoe UI', system-ui, -apple-system, sans-serif",
-                "lineHeight": "1.4"
-            }
+            style=header_style
         ),
 
-        # Subtitle with icons
-        html.H5([
-            "Exploring the Relationship Between Economic Factors and Heart Health Outcomes Worldwide ",
-        ],
+        # Subtitle
+        html.H5(
+            "Exploring the Relationship Between Economic Factors and Heart Health Outcomes Worldwide",
             className="text-center text-muted mb-3",
             style={
                 "fontSize": "clamp(1rem, 2vw, 1.25rem)",
@@ -301,230 +443,96 @@ def get_choropleth_layout(df):
             }
         ),
 
+        # Filter Card
         dbc.Card(
             dbc.CardBody(
                 dbc.Row([
-                    # First Row: 3 Columns
-                    dbc.Col([
-                        html.Label("Select Region", className="fw-bold mb-2"),
-                        html.Span("ⓘ", id="region-tooltip",
-                                  style={"cursor": "pointer", "marginLeft": "8px", "fontSize": "18px",
-                                         "color": "#0d6efd"}),
-                        dbc.Tooltip("Choose a region to filter data geographically.", target="region-tooltip",
-                                    placement="right", style=tooltip_style),
-                        dcc.Dropdown(
-                            id='continent-dropdown',
-                            options=[{'label': 'All', 'value': 'All'}] +
-                            [{'label': region, 'value': region}
-                                for region in df['Region'].unique()],
-                            value='All',
-                            **dropdown_style
-                        ),
-                    ], xs=12, sm=12, md=4, lg=4, xl=4),
-
-                    dbc.Col([
-                        html.Label("Select Year", className="fw-bold mb-2"),
-                        html.Span("ⓘ", id="year-tooltip",
-                                  style={"cursor": "pointer", "marginLeft": "8px", "fontSize": "18px",
-                                         "color": "#0d6efd"}),
-                        dbc.Tooltip("Select the year of interest for the data.", target="year-tooltip",
-                                    placement="right", style=tooltip_style),
-                        dcc.Dropdown(
-                            id='year-dropdown',
-                            options=[{'label': str(year), 'value': year}
-                                     for year in sorted(df['Year'].unique())],
-                            value=starting_year,
-                            **dropdown_style
-                        ),
-                    ], xs=12, sm=12, md=4, lg=4, xl=4),
-
-                    dbc.Col([
-                        html.Label("Select Health Metric",
-                                   className="fw-bold mb-2"),
-                        html.Span("ⓘ", id="metric-tooltip",
-                                  style={"cursor": "pointer", "marginLeft": "8px", "fontSize": "18px",
-                                         "color": "#0d6efd"}),
-                        dbc.Tooltip("Select a health-related metric for visualization.", target="metric-tooltip",
-                                    placement="right", style=tooltip_style),
-                        dcc.Dropdown(
-                            id='metric-dropdown',
-                            options=[
-                                {'label': 'Mortality Rate',
-                                    'value': 'MortalityRate'},
-                                {'label': 'Incidence Rate',
-                                    'value': 'IncidenceRate'},
-                                {'label': 'Prevalence Rate',
-                                    'value': 'PrevalenceRate'}
-                            ],
-                            value='PrevalenceRate',
-                            **dropdown_style
-                        ),
-                    ], xs=12, sm=12, md=4, lg=4, xl=4),
-
-                    # Second Row: 3 Columns
-                    dbc.Col([
-                        html.Label("Select Economic Indicator",
-                                   className="fw-bold mb-2"),
-                        html.Span(
-                            "ⓘ",
-                            id="econ-tooltip",
-                            style={"cursor": "pointer", "marginLeft": "8px",
-                                   "fontSize": "18px", "color": "#0d6efd"}
-                        ),
-                        dbc.Tooltip(
-                            "Selecting an economic indicator will replace the health metric map with the chosen economic data.",
-                            target="econ-tooltip",
-                            placement="right",
-                            style=tooltip_style
-                        ),
-                        dcc.Dropdown(
-                            id='economic-indicator-dropdown',
-                            options=[
-                                {'label': 'None', 'value': 'None'},
-                                {'label': 'GDP per capita', 'value': 'GDP'},
-                                {'label': 'Health Expenditure (% of GDP)',
-                                 'value': 'Health_Expenditure (% of GDP)'}
-                            ],
-                            value='None',
-                            **dropdown_style
-                        ),
-                    ], xs=12, sm=12, md=4, lg=4, xl=4),
-
-                    dbc.Col([
-                        html.Label("Select Age Group",
-                                   className="fw-bold mb-2"),
-                        html.Span(
-                            "ⓘ",
-                            id="age-group-tooltip",
-                            style={"cursor": "pointer", "marginLeft": "8px",
-                                   "fontSize": "18px", "color": "#0d6efd"}
-                        ),
-                        dbc.Tooltip(
-                            "Select an age group to filter data accordingly. 'Age-standardized' includes all age groups.",
-                            target="age-group-tooltip",
-                            placement="right",
-                            style=tooltip_style
-                        ),
-                        dcc.Dropdown(
-                            id='age-group-dropdown',
-                            options=[{'label': age, 'value': age} for age in sorted(df['Age_Group'].unique()) if
-                                     age != 'No Age Group'],
-                            value='Age-standardized',
-                            **dropdown_style
-                        ),
-                    ], xs=12, sm=12, md=4, lg=4, xl=4),
-
-                    dbc.Col([
-                        html.Label("Select Gender", className="fw-bold mb-2"),
-                        html.Span(
-                            "ⓘ",
-                            id="gender-tooltip",
-                            style={"cursor": "pointer", "marginLeft": "8px",
-                                   "fontSize": "18px", "color": "#0d6efd"}
-                        ),
-                        dbc.Tooltip(
-                            "Choose 'All' for both genders or filter by 'Male' or 'Female'.",
-                            target="gender-tooltip",
-                            placement="right",
-                            style=tooltip_style
-                        ),
-                        dcc.Dropdown(
-                            id='gender-dropdown',
-                            options=[
-                                {'label': 'All', 'value': 'All'},
-                                {'label': 'Female', 'value': 'Female'},
-                                {'label': 'Male', 'value': 'Male'}
-                            ],
-                            value='All',
-                            **dropdown_style
-                        ),
-                    ], xs=12, sm=12, md=4, lg=4, xl=4),
-                ], className="g-3"),
+                            dbc.Col([
+                                html.Label(dropdown['label'], className="fw-bold mb-2"),
+                                html.Span("ⓘ",
+                                          id=f"{dropdown['id'].split('-')[0]}-tooltip",
+                                          style={"cursor": "pointer", "marginLeft": "8px", "fontSize": "18px",
+                                                 "color": "#0d6efd"}),
+                                dbc.Tooltip(dropdown['tooltip'],
+                                            target=f"{dropdown['id'].split('-')[0]}-tooltip",
+                                            placement="right",
+                                            style=tooltip_style),
+                                dcc.Dropdown(
+                                    id=dropdown['id'],
+                                    options=dropdown['options'],
+                                    value=dropdown['value'],
+                                    **dropdown_style
+                                )
+                            ], xs=12, sm=12, md=4, lg=4, xl=4)
+                            for dropdown in dropdowns[:3]
+                        ] + [
+                            dbc.Col([
+                                html.Label(dropdown['label'], className="fw-bold mb-2"),
+                                html.Span("ⓘ",
+                                          id=f"{dropdown['id'].split('-')[0]}-tooltip",
+                                          style={"cursor": "pointer", "marginLeft": "8px", "fontSize": "18px",
+                                                 "color": "#0d6efd"}),
+                                dbc.Tooltip(dropdown['tooltip'],
+                                            target=f"{dropdown['id'].split('-')[0]}-tooltip",
+                                            placement="right",
+                                            style=tooltip_style),
+                                dcc.Dropdown(
+                                    id=dropdown['id'],
+                                    options=dropdown['options'],
+                                    value=dropdown['value'],
+                                    **dropdown_style
+                                )
+                            ], xs=12, sm=12, md=4, lg=4, xl=4)
+                            for dropdown in dropdowns[3:]
+                        ], className="g-3")
             ),
             className='bg-light border rounded p-3 shadow-sm mb-4'
         ),
 
+        # Maps Container
         dbc.Row([
             dbc.Col([
-                dcc.Graph(
-                    id='choropleth-map',
-                    style={
-                        'width': '100%',
-                        'min-height': '700px',
-                        'max-height': '800px',
-                        'height': 'clamp(700px, 50vh, 800px)',
-                        'overflow': 'hidden',
-                        'margin-bottom': '1.4rem'
-                    }
-                ),
-                # Economic map container with conditional rendering
-                html.Div(
-                    [
-                        html.H4("Economic Indicator Map",
-                                className="text-center mb-3"),
-                        dcc.Loading(
-                            id="loading-economic-map",
-                            type="default",
-                            children=[
-                                dcc.Graph(
-                                    id='economic-choropleth-map',
-                                    style={
-                                        'width': '100%',
-                                        'min-height': '700px',
-                                        'height': '800px',
-                                        'overflow': 'hidden'
-                                    }
-                                )
-                            ]
-                        )
-                    ],
-                    id='economic-map-container',
-                    style={'display': 'none'}
-                ),
-                # SACTTER PLOT
-                dcc.Graph(
-                    id='scatter-plot',
-                    style={
-                        'width': '100%', 'height': 'clamp(700px, 50vh, 800px)', 'display': 'none'}
-                ),
-                html.Div(
-                    [
-                        html.Hr(),
-                        html.H4("Scatter Plot", className="text-center mb-3"),
-                        dcc.Loading(
-                            id="loading-scatter-plot",
-                            type="default",
-                            children=[
-                                dcc.Graph(
-                                    id='scatter-plot',
-                                    style={
-                                        'width': '100%',
-                                        'min-height': '500px',
-                                        'height': '600px',
-                                        'overflow': 'hidden'
-                                    }
-                                )
-                            ]
-                        )
-                    ],
-                    id='scatter-container',
-                    style={'display': 'none'}
-                )
+                # Health Metric Map
+                dcc.Graph(id='choropleth-map', style=map_style),
 
-            ], xs=12, sm=12, md=12, lg=12, xl=12)
-        ], className="mb-2"),
+                # Economic Map
+                html.Div([
+                    html.H4("Economic Indicator Map", className="text-center mb-3"),
+                    dcc.Loading(
+                        id="loading-economic-map",
+                        type="default",
+                        children=[dcc.Graph(id='economic-choropleth-map', style=map_style)]
+                    )
+                ], id='economic-map-container', style={'display': 'none'}),
+
+                # Scatter Plot
+                html.Div([
+                    html.Hr(),
+                    html.H4("Scatter Plot", className="text-center mb-3"),
+                    dcc.Loading(
+                        id="loading-scatter-plot",
+                        type="default",
+                        children=[
+                            dcc.Graph(
+                                id='scatter-plot',
+                                style={'height': '600px', 'width': '100%'}
+                            )
+                        ]
+                    )
+                ], id='scatter-container', style={'display': 'none'})
+            ], width=12)
+        ], className="mb-4"),
 
         html.Hr(),
 
-        # Bar plot with responsive sizing
+        # Bar Plot
         dbc.Row([
             dbc.Col([
                 dcc.Graph(
                     id='bar-plot',
-                    style={'width': '100%',
-                           'height': 'clamp(700px, 50vh, 800px)'}
+                    style={'height': '700px', 'width': '100%'}
                 )
-            ], xs=12, sm=12, md=12, lg=12, xl=12)
+            ], width=12)
         ])
     ])
 

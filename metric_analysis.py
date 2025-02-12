@@ -35,19 +35,19 @@ MORTALITY_COLORS = ["#154360", "#1F618D", "#17202A", "#5499C7", "#2980B9"]
 AGE_GROUP_COLORS = ["#0B5345", "#117A65", "#148F77", "#1ABC9C", "#48C9B0"]
 RISK_FACTOR_COLORS = ["#0B5345", "#117A65", "#148F77", "#1ABC9C", "#48C9B0"]
 
-# CARD_STYLE = {
-#     "border": f"1px solid {BLUE_BLACK}",
-#     "borderRadius": "5px",
-#     "padding": "15px",
-#     "marginBottom": "20px",
-#     "boxShadow": "0px 0px 10px rgba(0, 0, 0, 0.1)",
-#     "backgroundColor": "white"
-# }
-
 card_font = style={"fontWeight": "500","fontSize": "1.25rem", "textAlign": "center"}
 
 # Layout function
 def get_metric_analysis_layout():
+    """
+      Creates and returns the layout for the heart disease metric analysis page.
+      The layout includes various visualizations such as prevalence rate by continent,
+      mortality rate trends, risk factor analysis, and country-wise comparisons.
+
+      Returns:
+          dbc.Container: A Dash Bootstrap container with the layout components.
+      """
+    pass
     return dbc.Container([
         html.H3("Heart Disease Metric Analysis", className="text-center fw-semibold mb-3 p-3 rounded shadow-sm",
                 style={"fontSize": "clamp(1.7rem, 4vw, 2.7rem)",
@@ -136,11 +136,30 @@ def get_metric_analysis_layout():
 
     # Step 2: Register callbacks for the Risk Factors Plot
 def register_callbacks_metrics(app):
+    """
+      Registers callbacks for interactive metric analysis visualizations in the Dash application.
+      The callbacks update graphs based on user selections.
+
+      Args:
+          app (dash.Dash): The Dash application instance.
+      """
     @app.callback(
         Output('prevalence-rate-continent', 'figure'),
         [Input('prevalence-year-dropdown', 'value')]
     )
+
     def update_prevalence_rate(year):
+        """
+         Generates a bar chart displaying the average prevalence rate of heart disease
+         by continent for a given year.
+
+         Args:
+             year (int): The selected year for which the prevalence rate is calculated.
+
+         Returns:
+             plotly.graph_objects.Figure: A bar chart showing the average prevalence rate
+             by continent.
+         """
         df_filtered = df_main[df_main['Year'] == year]
         avg_prevalence = df_filtered.groupby(
             'Continent')['PrevalenceRate'].mean().reset_index()
@@ -156,6 +175,17 @@ def register_callbacks_metrics(app):
     )
 
     def update_age_grouped_mortality(continent, age_group):
+        """
+        Generates a line chart showing the mortality rate trend over time
+        for a specific continent and age group.
+
+        Args:
+            continent (str): The selected continent.
+            age_group (str): The selected age group.
+
+        Returns:
+            plotly.graph_objects.Figure: A line chart displaying mortality trends over time.
+        """
         df_filtered = df_main[(df_main['Continent'] == continent) & (
             df_main['Age_Group'] == age_group)]
         mean_mortality = df_filtered.groupby(
@@ -172,6 +202,17 @@ def register_callbacks_metrics(app):
     )
 
     def update_country_gender_mortality(country, gender):
+        """
+         Generates a line chart showing the mortality rate trend over time
+         for a specific country and gender.
+
+         Args:
+             country (str): The selected country.
+             gender (str): The selected gender (Male/Female).
+
+         Returns:
+             plotly.graph_objects.Figure: A line chart displaying mortality trends over time.
+         """
         df_filtered = df_main[(df_main['Country'] == country)
                               & (df_main['Gender'] == gender)]
         mean_mortality = df_filtered.groupby(
@@ -184,8 +225,19 @@ def register_callbacks_metrics(app):
         Output('average-mortality-country', 'figure'),
         [Input('average-mortality-year-dropdown', 'value')]
     )
+    
 
     def update_average_mortality(year):
+        """
+         Generates a bar chart displaying the average mortality rate per country
+         for a given year.
+
+         Args:
+             year (int): The selected year.
+
+         Returns:
+             plotly.graph_objects.Figure: A bar chart showing average mortality rates by country.
+         """
         df_filtered = df_main[df_main['Year'] == year]
         avg_mortality = df_filtered.groupby(['Country_Code', 'Country'])[
             'MortalityRate'].mean().reset_index()
@@ -200,6 +252,18 @@ def register_callbacks_metrics(app):
     )
 
     def update_risk_factors_plot(risk_factor):
+        """
+         Generates a bar chart showing the average value of a selected risk factor
+         across different continents.
+
+         Args:
+             risk_factor (str): The selected risk factor to be analyzed.
+
+         Returns:
+             plotly.graph_objects.Figure: A bar chart displaying the average risk factor
+             values by continent.
+         """
+
         if risk_factor not in df_main.columns:
             return px.bar(title="Invalid Selection - No Data Available")
         df_main[risk_factor] = pd.to_numeric(

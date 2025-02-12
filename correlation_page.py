@@ -47,19 +47,28 @@ custom_continent_map = {
 
 corr_data = data.copy()
 corr_data = corr_data.drop(columns=['Country_Code'], axis=1)
+
 def get_correlation_layout():
+    """
+        Creates and returns the layout for the correlation analysis page in the Dash application.
+        The layout includes filters for selecting years and countries, a correlation heatmap,
+        a scatterplot for feature comparison, and a Sankey diagram for visualizing risk factor influence.
+
+        Returns:
+            dbc.Container: A Dash Bootstrap container with the layout components.
+        """
     return dbc.Container([
         html.H1(
-    ["Heart Disease Risk Factor Explorer ",
-        ],
-            className="text-center fw-semibold mb-3 p-3 rounded shadow-sm",
-            style={
-                "fontSize": "clamp(1.7rem, 4vw, 2.7rem)",
-                "marginBottom": "1rem",
-                "background": "linear-gradient(135deg, #17202A 0%, #2C3E50 100%)",
-                "color": "white",
-                "fontFamily": "'Segoe UI', system-ui, -apple-system, sans-serif",
-                "lineHeight": "1.4"
+            ["Heart Disease Risk Factor Explorer ",
+            ],
+                className="text-center fw-semibold mb-3 p-3 rounded shadow-sm",
+                style={
+                    "fontSize": "clamp(1.7rem, 4vw, 2.7rem)",
+                    "marginBottom": "1rem",
+                    "background": "linear-gradient(135deg, #17202A 0%, #2C3E50 100%)",
+                    "color": "white",
+                    "fontFamily": "'Segoe UI', system-ui, -apple-system, sans-serif",
+                    "lineHeight": "1.4"
             }),
         # Subtitle with icons
         html.H5([
@@ -69,9 +78,7 @@ def get_correlation_layout():
             style={"fontSize": "clamp(1.6rem, 2vw, 1.8rem)", 'border': '1px solid #dee2e6',}),
         
         dbc.Col([
-
             dbc.Row([
-
                 # Left Column: Filters
                 dbc.Col([
                     html.H5("Filters", style={'textAlign': 'center'}),
@@ -157,8 +164,29 @@ def get_correlation_layout():
 
 
 def register_callbacks_corr(app, cache):
+    """
+    Registers all callbacks related to correlation analysis in the Dash application.
+    The callbacks handle filtering of datasets and updating visualizations like heatmaps,
+    scatter plots, and Sankey diagrams.
+
+    Args:
+        app (dash.Dash): The Dash application instance.
+        cache (flask_caching.Cache): Cache instance for optimizing performance.
+    """
+    
     @cache.memoize()
     def sankey_data_prep(data):
+        """
+        Prepares the dataset by adding a 'Region' column to classify countries into continents.
+        It uses pycountry_convert for region mapping and a custom mapping for missing values.
+
+        Args:
+            data (pd.DataFrame): The dataset to be processed.
+
+        Returns:
+            pd.DataFrame: Updated dataset with an additional 'Region' column.
+        """
+        
         def get_region(country_name):
             try:
                 country_code = pc.country_name_to_country_alpha2(country_name, cn_name_format="default")
@@ -188,6 +216,18 @@ def register_callbacks_corr(app, cache):
 
     @cache.memoize()
     def create_sankey(trgt):
+        """
+        Generates a Sankey diagram illustrating the influence of risk factors on heart disease metrics.
+        The diagram visualizes the relationship between alcohol consumption, obesity, diabetes,
+        physical activity levels, and a selected target metric.
+
+        Args:
+            trgt (str): The selected target feature (e.g., PrevalenceRate, MortalityRate, IncidenceRate).
+
+        Returns:
+            plotly.graph_objects.Figure: The Sankey diagram visualization.
+        """
+        
         df = sankey_data_prep(data)
         # Calculate quartiles for each relevant column
         alcohol_quartiles = df['Alcohol_Value'].quantile([0.25, 0.5, 0.75])
@@ -281,7 +321,18 @@ def register_callbacks_corr(app, cache):
     
     @cache.memoize()
     def filter_scatter_data(year, countries, x_feature, y_feature):
-        """Generate filtered dataset for scatter plot based on user inputs."""
+        """
+        Filters the dataset based on user-selected year and country filters for scatter plot analysis.
+
+        Args:
+            year (int or str): Selected year or 'All' for no filtering.
+            countries (str): Selected country or 'All' for no filtering.
+            x_feature (str): Selected feature for the x-axis.
+            y_feature (str): Selected feature for the y-axis.
+
+        Returns:
+            pd.DataFrame: Filtered dataset.
+        """
         filtered_df = corr_data.copy()
         if year != 'All':
             filtered_df = filtered_df[filtered_df['Year'] == year]
@@ -291,7 +342,16 @@ def register_callbacks_corr(app, cache):
 
     @cache.memoize()
     def filter_heatmap_data(year, countries):
-        """Generate filtered dataset for heatmap based on year and countries"""
+        """
+        Filters the dataset based on user-selected year and country filters for heatmap analysis.
+
+        Args:
+            year (int or str): Selected year or 'All' for no filtering.
+            countries (str): Selected country or 'All' for no filtering.
+
+        Returns:
+            pd.DataFrame: Filtered dataset.
+        """
         filtered_df = corr_data.copy()
         if year != 'All':
             filtered_df = filtered_df[filtered_df['Year'] == year]
@@ -307,6 +367,17 @@ def register_callbacks_corr(app, cache):
         prevent_initial_call=True
     )
     def update_dropdown(selected_values):
+        """
+        Updates the heatmap feature selection dropdown. If 'All' is selected,
+        it automatically selects all available features.
+
+        Args:
+            selected_values (list): List of selected features.
+
+        Returns:
+            list: Updated list of selected features.
+        """
+
         if selected_values:
             if "All" in selected_values:
                 return [opt for opt in corr_data.columns if opt not in ['Gender', 'Age_Group', 'Country', 'Year']]
@@ -320,7 +391,22 @@ def register_callbacks_corr(app, cache):
     Input('heatmap-dropdown', 'value'),
     prevent_initial_call=True
         )
+
+
     def update_heatmap(year, countries, selected_features):
+        """
+        Generates and updates the correlation heatmap based on selected year, countries,
+        and features.
+
+        Args:
+            year (int or str): Selected year or 'All' for no filtering.
+            countries (str): Selected country or 'All' for no filtering.
+            selected_features (list): List of selected features for correlation analysis.
+
+        Returns:
+            plotly.graph_objects.Figure: The heatmap visualization.
+        """
+        
         if len(selected_features) < 1:
             return go.Figure()
 
@@ -377,6 +463,19 @@ def register_callbacks_corr(app, cache):
     Input('scatter-dropdown-y', 'value')
     )
     def update_scatter(year, countries, x_feature, y_feature):
+        """
+        Generates and updates the scatter plot based on selected year, countries, and features.
+
+        Args:
+            year (int or str): Selected year or 'All' for no filtering.
+            countries (str): Selected country or 'All' for no filtering.
+            x_feature (str): Selected feature for the x-axis.
+            y_feature (str): Selected feature for the y-axis.
+
+        Returns:
+            plotly.graph_objects.Figure: The scatter plot visualization.
+        """
+        
         if not x_feature or not y_feature:
             return go.Figure()
 
@@ -404,7 +503,18 @@ def register_callbacks_corr(app, cache):
             Output('sankey-diagram', 'figure'),
             Input('sankey-dropdown', 'value')
     )
+
+    
     def update_sankey(target):
+        """
+        Updates the Sankey diagram based on the selected target metric.
+
+        Args:
+            target (str): Selected target feature (e.g., PrevalenceRate, MortalityRate, IncidenceRate).
+
+        Returns:
+            plotly.graph_objects.Figure: The updated Sankey diagram visualization.
+        """
         return create_sankey(target)
 
 

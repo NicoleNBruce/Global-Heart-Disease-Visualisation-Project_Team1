@@ -433,12 +433,34 @@ def create_overview_layout():
 
 
 def register_callbacks_overview(app):
+    """
+    Registers all callbacks for the overview dashboard.
+
+    Args:
+        app (dash.Dash): The Dash application instance
+
+    Contains callbacks for:
+        - World map updates
+        - Top countries table updates
+        - Metric selection handling
+        - Year selection handling
+    """
 
     @app.callback(
         Output("world-map", "figure"),
         Input("year-selector", "value")
     )
+
     def update_map(selected_year):
+        """
+         Updates the choropleth world map based on selected year.
+
+         Args:
+             selected_year (int): The year selected in the dropdown
+
+         Returns:
+             dict: Updated Plotly figure object for the choropleth map
+         """
         filtered_df = df[df['Year'] == selected_year]
         return px.choropleth(
             filtered_df,
@@ -454,12 +476,22 @@ def register_callbacks_overview(app):
         Input('metric-selector', 'value'),
         Input('year-selector', 'value')
     )
+
     def update_top_countries(selected_metric, selected_year):
-        # Filter data for the selected year and 'Both' gender
+        """
+          Updates the top countries table based on selected metric and year.
+
+          Args:
+              selected_metric (str): The metric to rank countries by
+              selected_year (int): The year to filter data for
+
+          Returns:
+              tuple: (table_data, table_columns) for the DataTable component
+          """
         filtered_df = df[
             (df['Year'] == selected_year) &
             (df['Gender'] == 'Both')
-        ]
+            ]
 
         # Get top 8 countries
         top_8_df = filtered_df.nlargest(7, selected_metric)[
@@ -487,3 +519,4 @@ def register_callbacks_overview(app):
 # Run the app
 if __name__ == "__main__":
     app.run_server(debug=True)
+
