@@ -278,14 +278,15 @@ def get_choropleth_layout(df):
             "Heart Disease Atlas ",
            
         ],
-        className="text-center fw-semibold mb-3 p-2 bg-light rounded shadow-sm",
-        style={
-            "fontSize": "clamp(1.5rem, 4vw, 2.5rem)",
-            "marginBottom": "0.5rem",
-            "color": "#2C3E50",
-            "fontFamily": "'Segoe UI', system-ui, -apple-system, sans-serif",
-            "lineHeight": "1.4"
-        }
+            className="text-center fw-semibold mb-3 p-3 rounded shadow-sm",
+            style={
+                "fontSize": "clamp(1.7rem, 4vw, 2.7rem)",
+                "marginBottom": "1rem",
+                "background": "linear-gradient(135deg, #17202A 0%, #2C3E50 100%)",
+                "color": "white",
+                "fontFamily": "'Segoe UI', system-ui, -apple-system, sans-serif",
+                "lineHeight": "1.4"
+            }
         ),
 
         # Subtitle with icons

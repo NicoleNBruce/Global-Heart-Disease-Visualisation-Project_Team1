@@ -52,27 +52,21 @@ def get_correlation_layout():
         html.H1(
     ["Heart Disease Risk Factor Explorer ",
         ],
-        className="text-center fw-semibold mb-3 p-2 bg-light rounded shadow-sm",
-        style={
-            "fontSize": "clamp(1.5rem, 4vw, 2.5rem)",
-            "marginBottom": "0.5rem",
-            "color": "#2C3E50",
-            "fontFamily": "'Segoe UI', system-ui, -apple-system, sans-serif",
-            "lineHeight": "1.4"
-        }),
+            className="text-center fw-semibold mb-3 p-3 rounded shadow-sm",
+            style={
+                "fontSize": "clamp(1.7rem, 4vw, 2.7rem)",
+                "marginBottom": "1rem",
+                "background": "linear-gradient(135deg, #17202A 0%, #2C3E50 100%)",
+                "color": "white",
+                "fontFamily": "'Segoe UI', system-ui, -apple-system, sans-serif",
+                "lineHeight": "1.4"
+            }),
         # Subtitle with icons
         html.H5([
-            # html.Span(":globe_with_meridians:", style={"marginRight": "8px"}),
             "Unveiling Correlations in Global Health Metrics ",
-            # html.Span(":microscope:")
         ],
-            className="text-center text-muted mb-3",
-            style={
-                "fontSize": "clamp(1rem, 2vw, 1.25rem)",
-                "fontWeight": "normal",
-                "lineHeight": "1.3"
-            }
-        ),
+            className="text-center mb-3 p-2 bg-light rounded shadow-sm",
+            style={"fontSize": "clamp(1.6rem, 2vw, 1.8rem)", 'border': '1px solid #dee2e6',}),
         
         dbc.Col([
 
@@ -83,27 +77,35 @@ def get_correlation_layout():
                     html.H5("Filters", style={'textAlign': 'center'}),
 
                     # Year Selector
-                    html.Label("Select Year:"),
-                    
+                    html.Label("Select Year:", className="mb-2 fw-medium"),
                     dcc.Dropdown(
                         id='year-dropdown-corr',
-                        options=[{'label': 'All', 'value': 'All'}] + 
-                        [{'label': year, 'value': year} for year in sorted(corr_data['Year'].unique())],
+                        options=[{'label': 'All', 'value': 'All'}] +
+                                [{'label': year, 'value': year} for year in sorted(corr_data['Year'].unique())],
                         value='All',
-                        placeholder="Select year"
+                        placeholder="Select year",
+                        className="mb-4"
                     ),
 
                     # Country Selector
-                    html.Label("Select Countries:"),
+                    html.Label("Select Countries:", className="mb-2 fw-medium"),
                     dcc.Dropdown(
                         id='country-dropdown-corr',
-                        options=[{'label': 'All', 'value': 'All'}] + 
-                        [{'label': country, 'value': country} for country in sorted(corr_data['Country'].unique())],
+                        options=[{'label': 'All', 'value': 'All'}] +
+                                [{'label': country, 'value': country} for country in
+                                 sorted(corr_data['Country'].unique())],
                         value='All',
                         placeholder="Select one or more countries"
                     ),
-                
-                ], width=3, style={'backgroundColor': '#f8f9fa', 'padding': '20px', 'borderRadius': '10px'}),
+
+                ], width=3, style={
+                    'padding': '20px',
+                    'borderRadius': '12px',
+                    'border': '1px solid #dee2e6',
+                    'backgroundColor': '#f8f9fa',
+                    'boxShadow': '0 2px 4px rgba(0,0,0,0.05)'  ,
+                    "marginBottom": "30px"
+                }),
 
                 # Right Column: Visualizations
                 dbc.Col([

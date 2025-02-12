@@ -13,7 +13,6 @@ from metric_analysis import get_metric_analysis_layout, register_callbacks_metri
 from correlation_page import get_correlation_layout, register_callbacks_corr
 from overview import create_overview_layout, register_callbacks_overview
 
-# Load and preprocess the data (used across multiple pages)
 df = pd.read_parquet("dataset/FINAL_MERGED_DATA_reimputed.parquet", engine="pyarrow")
 df.loc[:, 'Region'] = df['Country_Code'].apply(get_region)
 corr_data = df.copy()
