@@ -207,7 +207,7 @@ def create_overview_layout():
                             ]
                         )
                     ])
-                ], className="mb-4 shadow-sm border d-flex flex-column")
+                ], className="mb-4 shadow-sm border d-flex flex-column pb-5")
             ], xs=12, lg=6),
 
             # GDP & Health Expenditure Card
