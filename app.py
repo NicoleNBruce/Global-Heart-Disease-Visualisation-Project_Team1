@@ -3,24 +3,52 @@ from dash import dcc, html
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 import pandas as pd
+
+import pycountry
 import pycountry_convert as pc
-import plotly.express as px
+
 from flask_caching import Cache
 
 # Import functions from external scripts
-from choropleth import get_region, get_choropleth_layout, register_choropleth_callbacks
+from choropleth import get_choropleth_layout, register_choropleth_callbacks
 from metric_analysis import get_metric_analysis_layout, register_callbacks_metrics
 from correlation_page import get_correlation_layout, register_callbacks_corr
 from overview import create_overview_layout, register_callbacks_overview
 
+
+continent_map = {
+    'NA': 'North America', 'SA': 'South America', 'EU': 'Europe',
+    'AS': 'Asia', 'OC': 'Oceania', 'AF': 'Africa'
+}
+
+manual_region_mapping = {
+    'XKX': 'Europe', 'OWID_KOS': 'Europe', 'SXM': 'North America', 'TLS': 'Asia'}
+
+def alpha3_to_alpha2(alpha3_code):
+    country = pycountry.countries.get(alpha_3=alpha3_code)
+    return country.alpha_2 if country else None
+
+
+def get_region(country_code):
+    if country_code in manual_region_mapping:
+        return manual_region_mapping[country_code]
+    if len(country_code) == 3:
+        country_code = alpha3_to_alpha2(country_code)
+    return continent_map.get(pc.country_alpha2_to_continent_code(country_code), 'Unknown Region')
+
+
+
 df = pd.read_parquet("dataset/FINAL_MERGED_DATA_reimputed.parquet", engine="pyarrow")
 df.loc[:, 'Region'] = df['Country_Code'].apply(get_region)
+
 corr_data = df.copy()
 corr_data = corr_data.drop(columns=['Country_Code'], axis=1)
 
 # Unique values for filters
 years = sorted(df['Year'].unique())
 countries = sorted(df['Country'].unique())
+age_groups = sorted(df['Age_Group'].unique())
+genders = ['Male', 'Female', 'Both']
 
 # Sidebar styling and layout
 SIDEBAR_STYLE = {
@@ -42,14 +70,14 @@ SIDEBAR_HIDDEN = {**SIDEBAR_STYLE, "left": "-280px"}
 
 CONTENT_STYLE1 = {
     "marginLeft": "330px",
-    "marginRight": "20px",
+    "marginRight": "10px",
     "padding": "30px",
     "transition": "margin-left 0.4s ease-in-out",
 }
 
 CONTENT_STYLE2 = {
     "marginLeft": "50px",
-    "marginRight": "20px",
+    "marginRight": "10px",
     "padding": "30px",
     "transition": "margin-left 0.4s ease-in-out",
 }
@@ -81,11 +109,18 @@ app.config.suppress_callback_exceptions = True
 server = app.server
 
 # Configure caching
+# cache = Cache(app.server, config={
+#     'CACHE_TYPE': 'redis',
+#     'CACHE_REDIS_URL': 'redis://red-culnokin91rc73efq2kg:6379',
+#     'CACHE_DEFAULT_TIMEOUT': 300
+# })
+
 cache = Cache(app.server, config={
     'CACHE_TYPE': 'redis',
-    'CACHE_REDIS_URL': 'redis://red-culnokin91rc73efq2kg:6379',
+    'CACHE_REDIS_URL': 'redis://localhost:6379',  # Use your actual Redis server URL
     'CACHE_DEFAULT_TIMEOUT': 300
 })
+
 # Sidebar with navigation links
 sidebar = html.Div(
     [
@@ -145,8 +180,6 @@ app.layout = html.Div([
 ])
 
 # Callback to update page content
-
-
 @app.callback(
     Output("page-content", "children"),
     Input("url", "pathname")
@@ -155,10 +188,10 @@ def display_page(pathname):
     if pathname == "/choropleth":
         return get_choropleth_layout(df)
     elif pathname == "/metric-analysis":
-        return get_metric_analysis_layout()
+        return get_metric_analysis_layout(df)
     elif pathname == "/correlation":
         return get_correlation_layout()
-    return create_overview_layout()
+    return create_overview_layout(df)
 
 
 
@@ -184,8 +217,8 @@ def toggle_sidebar(n):
 
 
 # Register callbacks for pages
-register_callbacks_overview(app)
-register_callbacks_metrics(app)
+register_callbacks_overview(app,df)
+register_callbacks_metrics(app, df_main=df)
 register_choropleth_callbacks(app, df)
 register_callbacks_corr(app, cache)
 

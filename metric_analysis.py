@@ -1,32 +1,9 @@
-import dash
 from dash import dcc, html
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.express as px
 import pycountry_convert as pc
 from dash.dependencies import Input, Output
-# Load dataset
-df_main = pd.read_parquet('dataset/FINAL_MERGED_DATA_reimputed.parquet', engine="pyarrow")
-
-# Function to map country to continent
-def country_to_continent(country_name):
-    try:
-        country_code = pc.country_name_to_country_alpha2(country_name)
-        continent_code = pc.country_alpha2_to_continent_code(country_code)
-        continent_name = pc.convert_continent_code_to_continent_name(
-            continent_code)
-        return continent_name
-    except:
-        return None
-
-df_main['Continent'] = df_main['Country'].apply(country_to_continent)
-
-# Unique values for filters
-years = sorted(df_main['Year'].unique())
-continents = sorted(df_main['Continent'].dropna().unique())
-countries = sorted(df_main['Country'].unique())
-age_groups = sorted(df_main['Age_Group'].unique())
-genders = sorted(df_main['Gender'].unique())
 
 # Color schemes
 BLUE_BLACK = "#17202A"
@@ -35,19 +12,16 @@ MORTALITY_COLORS = ["#154360", "#1F618D", "#17202A", "#5499C7", "#2980B9"]
 AGE_GROUP_COLORS = ["#0B5345", "#117A65", "#148F77", "#1ABC9C", "#48C9B0"]
 RISK_FACTOR_COLORS = ["#0B5345", "#117A65", "#148F77", "#1ABC9C", "#48C9B0"]
 
-# CARD_STYLE = {
-#     "border": f"1px solid {BLUE_BLACK}",
-#     "borderRadius": "5px",
-#     "padding": "15px",
-#     "marginBottom": "20px",
-#     "boxShadow": "0px 0px 10px rgba(0, 0, 0, 0.1)",
-#     "backgroundColor": "white"
-# }
-
 card_font = style={"fontWeight": "500","fontSize": "1.25rem", "textAlign": "center"}
 
 # Layout function
-def get_metric_analysis_layout():
+def get_metric_analysis_layout(df):
+    years = sorted(df['Year'].unique())
+    continents = sorted(df['Region'].dropna().unique())
+    countries = sorted(df['Country'].unique())
+    age_groups = sorted(df['Age_Group'].unique())
+    genders = ['Male', 'Female', 'Both']
+    
     return dbc.Container([
         html.H3("Heart Disease Metric Analysis", className="text-center fw-semibold mb-3 p-3 rounded shadow-sm",
                 style={"fontSize": "clamp(1.7rem, 4vw, 2.7rem)",
@@ -135,7 +109,8 @@ def get_metric_analysis_layout():
     ], fluid=True)
 
     # Step 2: Register callbacks for the Risk Factors Plot
-def register_callbacks_metrics(app):
+
+def register_callbacks_metrics(app,df_main):
     @app.callback(
         Output('prevalence-rate-continent', 'figure'),
         [Input('prevalence-year-dropdown', 'value')]
@@ -143,10 +118,10 @@ def register_callbacks_metrics(app):
     def update_prevalence_rate(year):
         df_filtered = df_main[df_main['Year'] == year]
         avg_prevalence = df_filtered.groupby(
-            'Continent')['PrevalenceRate'].mean().reset_index()
-        return px.bar(avg_prevalence, x='Continent', y='PrevalenceRate',
+            'Region')['PrevalenceRate'].mean().reset_index()
+        return px.bar(avg_prevalence, x='Region', y='PrevalenceRate',
                       title=f'Average Prevalence Rate by Continent ({year})',
-                      template='plotly_white', color='Continent',
+                      template='plotly_white', color='Region',
                       color_discrete_sequence=PREVALENCE_COLORS)
 
     @app.callback(
@@ -156,7 +131,7 @@ def register_callbacks_metrics(app):
     )
 
     def update_age_grouped_mortality(continent, age_group):
-        df_filtered = df_main[(df_main['Continent'] == continent) & (
+        df_filtered = df_main[(df_main['Region'] == continent) & (
             df_main['Age_Group'] == age_group)]
         mean_mortality = df_filtered.groupby(
             'Year')['MortalityRate'].mean().reset_index()
@@ -198,24 +173,22 @@ def register_callbacks_metrics(app):
         Output('risk-factors-by-region-plot', 'figure'),
         [Input('risk-factor-dropdown', 'value')]
     )
-
     def update_risk_factors_plot(risk_factor):
         if risk_factor not in df_main.columns:
             return px.bar(title="Invalid Selection - No Data Available")
         df_main[risk_factor] = pd.to_numeric(
             df_main[risk_factor], errors='coerce')
         # Selecting only necessary columns and dropping missing values
-        df_filtered = df_main[['Continent', 'Country', risk_factor]].dropna()
+        df_filtered = df_main[['Region', 'Country', risk_factor]].dropna()
         # Group data by Continent but keep Country values for hover
-        grouped_df = df_filtered.groupby(['Continent', 'Country'], as_index=False)[
-            risk_factor].mean()
+        grouped_df = df_filtered.groupby(['Region', 'Country'], as_index=False)[risk_factor].mean()
         return px.bar(
             grouped_df,
-            x="Continent",
+            x="Region",
             y=risk_factor,
             title=f'Average {risk_factor.replace("_", " ")} by Continent',
             template='plotly_white',
-            color="Continent",
+            color="Region",
             color_discrete_sequence=RISK_FACTOR_COLORS,
             hover_data={"Country": True}  # Show country names on hover
         )

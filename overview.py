@@ -3,7 +3,6 @@ from dash import dcc, html, dash_table
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 import plotly.express as px
-import pandas as pd
 
 """
 Global Heart Disease Analytics Dashboard
@@ -32,15 +31,12 @@ app = dash.Dash(
 )
 app.config.suppress_callback_exceptions = True
 
-# Load data
-df = pd.read_parquet('dataset/FINAL_MERGED_DATA_reimputed.parquet', engine="pyarrow")
-
 def get_trend_icon(current, previous):
     """Returns FontAwesome class for trend direction."""
     return "fa-arrow-up text-danger" if current > previous else "fa-arrow-down text-success"
 
 
-def create_overview_layout():
+def create_overview_layout(df):
     """
     Creates the main overview layout of the dashboard.
 
@@ -432,7 +428,7 @@ def create_overview_layout():
     ])
 
 
-def register_callbacks_overview(app):
+def register_callbacks_overview(app,df):
 
     @app.callback(
         Output("world-map", "figure"),
@@ -482,8 +478,3 @@ def register_callbacks_overview(app):
         data = top_8_df.to_dict('records')
 
         return data, columns
-
-
-# Run the app
-if __name__ == "__main__":
-    app.run_server(debug=True)

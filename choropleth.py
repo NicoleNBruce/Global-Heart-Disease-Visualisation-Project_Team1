@@ -1,20 +1,8 @@
 import plotly.express as px
 import pandas as pd
-import pycountry
-import pycountry_convert as pc
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 from dash.dependencies import Input, Output
-
-continent_map = {
-    'NA': 'North America', 'SA': 'South America', 'EU': 'Europe',
-    'AS': 'Asia', 'OC': 'Oceania', 'AF': 'Africa'
-}
-
-manual_region_mapping = {
-    'XKX': 'Europe', 'OWID_KOS': 'Europe', 'SXM': 'North America', 'TLS': 'Asia'}
 
 # Tooltip style
 tooltip_style = {
@@ -24,20 +12,6 @@ tooltip_style = {
     "padding": "8px",
     "fontSize": "14px"
 }
-
-
-def alpha3_to_alpha2(alpha3_code):
-    country = pycountry.countries.get(alpha_3=alpha3_code)
-    return country.alpha_2 if country else None
-
-
-def get_region(country_code):
-    if country_code in manual_region_mapping:
-        return manual_region_mapping[country_code]
-    if len(country_code) == 3:
-        country_code = alpha3_to_alpha2(country_code)
-    return continent_map.get(pc.country_alpha2_to_continent_code(country_code), 'Unknown Region')
-
 
 def create_choropleth(df, year, continent, metric, age_group, gender, economic_indicator=None):
     filtered_df = df[df['Year'] == year]
