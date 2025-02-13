@@ -167,25 +167,4 @@ If you have any questions or feedback, feel free to reach out to us:
 
 - GitHub: [https://github.com/NicoleNBruce/Global-Heart-Disease-Visualisation-Project_Team1.git]
 
-```
 
----
-
-### Sections Overview:
-
-- **Project Title and Description**: Describes what the app does and the main features.
-- **Features**: Lists the key features of the dashboard to highlight its capabilities.
-- **Installation**: Step-by-step guide to help users set up and run the app locally.
-- **Usage**: Provides users with an understanding of how to interact with the app once it's running.
-- **Screenshots**: Visual representation of the app (you can replace the path with your actual screenshot).
-- **Live Demo**: Link to a live version of the dashboard (if hosted somewhere).
-- **Dependencies**: Lists the necessary Python packages for the app.
-- **Known Issues**: Any existing issues or bugs in the app.
-- **Roadmap**: Future features or improvements.
-- **Contributing**: Instructions for how others can contribute to the project.
-- **License**: Licensing details for the project.
-- **Acknowledgments**: Recognizes contributors, libraries, or data sources.
-- **Contact**: How users can get in touch with you for feedback or questions.
-
----
-```
