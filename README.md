@@ -52,6 +52,7 @@ Correlation Analysis
 - \*\*Tooltip & Data Warnings: Get helpful tooltips and warnings for any missing or insufficient variance in the data.
 
 ## Installation
+To run the deployed app: https://glass-timing-450808-q8.uc.r.appspot.com/
 
 To run this app locally, follow these steps:
 
