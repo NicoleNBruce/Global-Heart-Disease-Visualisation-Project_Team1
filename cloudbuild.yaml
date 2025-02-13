@@ -1,0 +1,15 @@
+steps:
+  # Install dependencies
+  - name: 'python:3.9'
+    id: 'Install dependencies'
+    entrypoint: 'pip'
+    args: ['install', '-r', 'requirements.txt']
+
+  # Deploy to App Engine
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'Deploy to App Engine'
+    entrypoint: 'gcloud'
+    args: ['app', 'deploy']
+
+# Optional: Specify the timeout for the build
+timeout: '1600s'
