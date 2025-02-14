@@ -44,6 +44,17 @@ corr_data = corr_data.drop(columns=['Country_Code'], axis=1)
 
 
 def get_correlation_layout():
+    """
+        Creates the layout for the correlation analysis page of the dashboard.
+
+        Returns:
+            dbc.Container: A Bootstrap container containing the complete layout including:
+                - Title and subtitle
+                - Filter section (year and country selectors)
+                - Correlation heatmap with feature selection
+                - Scatter plot with x and y axis feature selection
+                - Sankey diagram with target feature selection
+        """
     return dbc.Container([
         html.H1(
             ["Heart Disease Risk Factor Explorer ",
@@ -157,9 +168,41 @@ def get_correlation_layout():
 
 
 def register_callbacks_corr(app, cache):
+    """
+       Registers all callbacks for the correlation analysis page.
+
+       Args:
+           app (dash.Dash): The Dash application instance
+           cache (Cache): Flask-Cache instance for memoizing computations
+
+       Note:
+           This function sets up the interactive functionality for:
+           - Heatmap feature selection and visualization
+           - Scatter plot feature selection and visualization
+           - Sankey diagram updates
+           - Filter applications
+       """
     @cache.memoize()
     def sankey_data_prep(data):
+        """
+          Prepares data for the Sankey diagram by adding region information to the dataset.
+
+          Args:
+              data (pd.DataFrame): Input DataFrame containing country information
+
+          Returns:
+              pd.DataFrame: DataFrame with added 'Region' column mapping countries to their continental regions
+          """
         def get_region(country_name):
+            """
+                   Maps a country name to its continental region using pycountry_convert.
+
+                   Args:
+                       country_name (str): Name of the country
+
+                   Returns:
+                       str: Continent name or np.nan if mapping fails
+                   """
             try:
                 country_code = pc.country_name_to_country_alpha2(country_name, cn_name_format="default")
                 continent_code = pc.country_alpha2_to_continent_code(country_code)
@@ -176,6 +219,15 @@ def register_callbacks_corr(app, cache):
                 return np.nan  # handling cases where country code is not found
 
         def get_custom_region(country_name):
+            """
+                    Maps countries to regions using custom mapping for cases not covered by pycountry_convert.
+
+                    Args:
+                        country_name (str): Name of the country
+
+                    Returns:
+                        str: Region name from custom mapping or np.nan if not found
+                    """
             for region, countries in custom_continent_map.items():
                 if country_name in countries:
                     return region
@@ -188,6 +240,15 @@ def register_callbacks_corr(app, cache):
 
     @cache.memoize()
     def create_sankey(trgt):
+        """
+           Creates a Sankey diagram showing relationships between risk factors, regions, and target health metric.
+
+           Args:
+               trgt (str): Target variable name ('PrevalenceRate', 'MortalityRate', or 'IncidenceRate')
+
+           Returns:
+               go.Figure: Plotly figure object containing the Sankey diagram
+           """
         df = sankey_data_prep(data)
         # Calculate quartiles for each relevant column
         alcohol_quartiles = df['Alcohol_Value'].quantile([0.25, 0.5, 0.75])
@@ -296,7 +357,18 @@ def register_callbacks_corr(app, cache):
 
     @cache.memoize()
     def filter_scatter_data(year, countries, x_feature, y_feature):
-        """Generate filtered dataset for scatter plot based on user inputs."""
+        """
+           Filters the dataset based on selected year and countries for scatter plot visualization.
+
+           Args:
+               year (str or int): Selected year or 'All'
+               countries (str): Selected country or 'All'
+               x_feature (str): Feature name for x-axis
+               y_feature (str): Feature name for y-axis
+
+           Returns:
+               pd.DataFrame: Filtered DataFrame containing only the selected data
+           """
         filtered_df = corr_data.copy()
         if year != 'All':
             filtered_df = filtered_df[filtered_df['Year'] == year]
@@ -306,7 +378,16 @@ def register_callbacks_corr(app, cache):
 
     @cache.memoize()
     def filter_heatmap_data(year, countries):
-        """Generate filtered dataset for heatmap based on year and countries"""
+        """
+          Filters the dataset based on selected year and countries for heatmap visualization.
+
+          Args:
+              year (str or int): Selected year or 'All'
+              countries (str): Selected country or 'All'
+
+          Returns:
+              pd.DataFrame: Filtered DataFrame containing only the selected data
+          """
         filtered_df = corr_data.copy()
         if year != 'All':
             filtered_df = filtered_df[filtered_df['Year'] == year]
@@ -322,6 +403,15 @@ def register_callbacks_corr(app, cache):
         prevent_initial_call=True
     )
     def update_dropdown(selected_values):
+        """
+           Updates the heatmap feature selection dropdown values.
+
+           Args:
+               selected_values (list): List of currently selected feature values
+
+           Returns:
+               list: Updated list of selected values, returns all features if 'All' is selected
+           """
         if selected_values:
             if "All" in selected_values:
                 return [opt for opt in corr_data.columns if opt not in ['Gender', 'Age_Group', 'Country', 'Year']]
@@ -336,6 +426,17 @@ def register_callbacks_corr(app, cache):
         prevent_initial_call=True
     )
     def update_heatmap(year, countries, selected_features):
+        """
+            Updates the correlation heatmap based on selected filters and features.
+
+            Args:
+                year (str or int): Selected year or 'All'
+                countries (str): Selected country or 'All'
+                selected_features (list): List of features to include in the heatmap
+
+            Returns:
+                go.Figure: Updated correlation heatmap figure
+            """
         if len(selected_features) < 1:
             return go.Figure()
 
@@ -391,6 +492,18 @@ def register_callbacks_corr(app, cache):
         Input('scatter-dropdown-y', 'value')
     )
     def update_scatter(year, countries, x_feature, y_feature):
+        """
+           Updates the scatter plot based on selected filters and features.
+
+           Args:
+               year (str or int): Selected year or 'All'
+               countries (str): Selected country or 'All'
+               x_feature (str): Feature name for x-axis
+               y_feature (str): Feature name for y-axis
+
+           Returns:
+               go.Figure: Updated scatter plot figure
+           """
         if not x_feature or not y_feature:
             return go.Figure()
 
@@ -419,6 +532,15 @@ def register_callbacks_corr(app, cache):
         Input('sankey-dropdown', 'value')
     )
     def update_sankey(target):
+        """
+           Updates the Sankey diagram based on selected target variable.
+
+           Args:
+               target (str): Selected target variable ('PrevalenceRate', 'MortalityRate', or 'IncidenceRate')
+
+           Returns:
+               go.Figure: Updated Sankey diagram figure
+           """
         return create_sankey(target)
 
 

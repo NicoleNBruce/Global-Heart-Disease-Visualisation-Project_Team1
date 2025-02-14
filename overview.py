@@ -17,6 +17,12 @@ Main Features:
 - Comparative analysis of countries
 - Risk factor tracking
 - Economic indicator correlation
+
+Technical Components:
+- Built with Dash and Plotly for interactive visualizations
+- Uses Bootstrap for responsive layout
+- Implements callback patterns for dynamic updates
+- Integrates multiple data sources into a unified interface
 """
 
 
@@ -429,6 +435,12 @@ def create_overview_layout(df):
 
 
 def register_callbacks_overview(app,df):
+    """
+        Sets up interactive callbacks for map and table updates.
+        Args:
+            app: Dash app instance
+            df: DataFrame with required data
+        """
 
     @app.callback(
         Output("world-map", "figure"),

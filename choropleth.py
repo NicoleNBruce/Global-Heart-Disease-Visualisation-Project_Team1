@@ -14,6 +14,32 @@ tooltip_style = {
 }
 
 def create_choropleth(df, year, continent, metric, age_group, gender, economic_indicator=None):
+    """
+        Creates a choropleth map visualization of health or economic metrics by country.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            DataFrame containing country-level data with columns for Year, Region, Country_Code,
+            Age_Group, Gender, and various metrics (MortalityRate, IncidenceRate, PrevalenceRate, GDP, etc.)
+        year : int
+            The year to filter data for
+        continent : str
+            The continent/region to filter for ("All" or specific continent name)
+        metric : str
+            The health metric to visualize ('MortalityRate', 'IncidenceRate', or 'PrevalenceRate')
+        age_group : str
+            Age group to filter for ('Age-standardized' or specific age group)
+        gender : str
+            Gender to filter for ('All', 'Male', or 'Female')
+        economic_indicator : str, optional
+            Economic metric to visualize instead of health metric ('GDP' or 'Health_Expenditure (% of GDP)')
+
+        Returns
+        -------
+        plotly.graph_objects.Figure
+            A choropleth map figure object with hover tooltips and customized styling
+        """
     filtered_df = df[df['Year'] == year]
     if continent != "All":
         filtered_df = filtered_df[filtered_df['Region'] == continent]
@@ -116,6 +142,30 @@ def create_choropleth(df, year, continent, metric, age_group, gender, economic_i
 
 
 def create_barplot(df, year, continent, metric, age_group, gender):
+    """
+       Creates a horizontal bar plot showing top 10 countries for a selected health metric.
+
+       Parameters
+       ----------
+       df : pandas.DataFrame
+           DataFrame containing country-level data with columns for Year, Region, Country,
+           Age_Group, Gender, and various health metrics
+       year : int
+           The year to filter data for
+       continent : str
+           The continent/region to filter for ("All" or specific continent name)
+       metric : str
+           The health metric to visualize ('MortalityRate', 'IncidenceRate', or 'PrevalenceRate')
+       age_group : str
+           Age group to filter for ('Age-standardized' or specific age group)
+       gender : str
+           Gender to filter for ('All', 'Male', or 'Female')
+
+       Returns
+       -------
+       plotly.graph_objects.Figure
+           A horizontal bar plot figure showing the top 10 countries for the selected metric
+       """
     filtered_df = df[df['Year'] == year]
     if continent != "All":
         filtered_df = filtered_df[filtered_df['Region'] == continent]
@@ -190,7 +240,31 @@ def create_barplot(df, year, continent, metric, age_group, gender):
 
 
 def create_scatter_plot(df, year, continent, metric, economic_indicator, age_group, gender):
-    # Filter data based on user selections
+    """
+        Creates a scatter plot to visualize correlation between health metrics and economic indicators.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            DataFrame containing country-level data with health and economic indicators
+        year : int
+            The year to filter data for
+        continent : str
+            The continent/region to filter for ("All" or specific continent name)
+        metric : str
+            The health metric for y-axis ('MortalityRate', 'IncidenceRate', or 'PrevalenceRate')
+        economic_indicator : str
+            The economic indicator for x-axis ('GDP' or 'Health_Expenditure (% of GDP)')
+        age_group : str
+            Age group to filter for ('Age-standardized' or specific age group)
+        gender : str
+            Gender to filter for ('All', 'Male', or 'Female')
+
+        Returns
+        -------
+        plotly.graph_objects.Figure
+            A scatter plot figure with trend line showing correlation between selected metrics
+        """
     filtered_df = df[df['Year'] == year]
     if continent != "All":
         filtered_df = filtered_df[filtered_df['Region'] == continent]
@@ -239,6 +313,27 @@ def create_scatter_plot(df, year, continent, metric, economic_indicator, age_gro
 
 
 def get_choropleth_layout(df):
+    """
+        Creates the main layout for the choropleth visualization dashboard.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            DataFrame containing the full dataset used for creating filter options
+            and initializing default values
+
+        Returns
+        -------
+        dash.html.Div
+            A Div component containing the complete dashboard layout with:
+            - Title and subtitle
+            - Filter dropdowns (region, year, metric, economic indicator, age group, gender)
+            - Choropleth map
+            - Economic indicator map (conditionally rendered)
+            - Scatter plot (conditionally rendered)
+            - Bar plot
+            All components are responsive and include tooltips for user guidance.
+        """
     starting_year = df['Year'].min()
 
     dropdown_style = {
@@ -514,6 +609,26 @@ external_stylesheets = [
 
 
 def register_choropleth_callbacks(app, df):
+    """
+       Registers callback functions for the choropleth dashboard's interactive elements.
+
+       Parameters
+       ----------
+       app : dash.Dash
+           The Dash application instance
+       df : pandas.DataFrame
+           DataFrame containing the full dataset used for creating visualizations
+
+       Notes
+       -----
+       This function sets up callbacks that:
+       - Update the choropleth map based on selected filters
+       - Update the economic indicator map when an economic metric is selected
+       - Update the bar plot based on selected filters
+       - Update the scatter plot when comparing health and economic metrics
+       - Control visibility of economic map and scatter plot containers
+       All callbacks are triggered by changes to any dropdown selection.
+       """
     @app.callback(
         [Output("choropleth-map", "figure"),
          Output("economic-choropleth-map", "figure"),

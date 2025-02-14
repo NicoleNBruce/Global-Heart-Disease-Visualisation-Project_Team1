@@ -25,11 +25,30 @@ manual_region_mapping = {
     'XKX': 'Europe', 'OWID_KOS': 'Europe', 'SXM': 'North America', 'TLS': 'Asia'}
 
 def alpha3_to_alpha2(alpha3_code):
+    """
+        Convert a three-letter country code (ISO 3166-1 alpha-3) to its corresponding two-letter code (ISO 3166-1 alpha-2).
+
+        Args:
+            alpha3_code (str): The three-letter country code to convert.
+
+        Returns:
+            str or None: The corresponding two-letter country code if found, None otherwise.
+        """
     country = pycountry.countries.get(alpha_3=alpha3_code)
     return country.alpha_2 if country else None
 
 
 def get_region(country_code):
+    """
+        Determine the continental region for a given country code.
+
+        Args:
+            country_code (str): The country code (either ISO 3166-1 alpha-2 or alpha-3).
+
+        Returns:
+            str: The continental region name ('North America', 'South America', 'Europe',
+                 'Asia', 'Oceania', 'Africa', or 'Unknown Region').
+        """
     if country_code in manual_region_mapping:
         return manual_region_mapping[country_code]
     if len(country_code) == 3:
@@ -185,6 +204,15 @@ app.layout = html.Div([
     Input("url", "pathname")
 )
 def display_page(pathname):
+    """
+       Route to the appropriate page layout based on the URL pathname.
+
+       Args:
+           pathname (str): The current URL pathname.
+
+       Returns:
+           dash.html.Div: The layout component for the requested page.
+       """
     if pathname == "/choropleth":
         return get_choropleth_layout(df)
     elif pathname == "/metric-analysis":
@@ -204,6 +232,16 @@ def display_page(pathname):
     prevent_initial_call=True
 )
 def toggle_sidebar(n):
+    """
+       Toggle the sidebar visibility and adjust the layout accordingly.
+
+       Args:
+           n (int): Number of times the toggle button has been clicked.
+
+       Returns:
+           tuple: A tuple containing (sidebar_style, content_style, toggle_style) dictionaries
+                  for updating the UI components' styles.
+       """
     if n and n % 2 == 1:
         sidebar_style = SIDEBAR_HIDDEN
         toggle_style = TOGGLE_STYLE_HIDDEN
