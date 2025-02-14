@@ -94,7 +94,7 @@ The app will be running on your local machine at `http://127.0.0.1:8050/`. Open 
 ## Usage
 
 Find below a link to the User guide
-User Guide Link = [UserGuideLink]
+User Guide Link = [(https://github.com/NicoleNBruce/Global-Heart-Disease-Visualisation-Project_Team1/blob/week-4-deliverables/Dashboard%20User%20Guide.pdf)]
 
 ## Live Demo
 
