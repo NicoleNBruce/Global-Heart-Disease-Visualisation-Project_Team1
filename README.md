@@ -61,7 +61,6 @@ Clone the repository to your local machine:
 git clone https://github.com/NicoleNBruce/Global-Heart-Disease-Visualisation-Project_Team1.git
 cd Global-Heart-Disease-Visualisation-Project_Team1
 ```
-````
 
 ### 2. Set Up a Virtual Environment
 
