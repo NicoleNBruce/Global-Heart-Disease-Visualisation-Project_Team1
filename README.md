@@ -8,45 +8,45 @@ The dashboard contains 4 pages which different features
 
 Overview Page
 
-- \*\*Global Heart Disease Analytics Overview: Interactive summary of key statistics, including total countries analyzed, most recent year of data, and average mortality and prevalence rates.
+- Global Heart Disease Analytics Overview: Interactive summary of key statistics, including total countries analyzed, most recent year of data, and average mortality and prevalence rates.
   Key Metrics & Insights
-- \*\*Total Countries Analyzed: Displays the number of countries and territories with heart disease data.
+- Total Countries Analyzed: Displays the number of countries and territories with heart disease data.
   Most Recent Year of Data: Shows the latest year for which data is available.
-- \*\*Average Mortality Rate: Presents the average heart disease mortality rate (per 100,000 people).
-- \*\*Average Prevalence Rate: Displays the average heart disease prevalence rate (per 100,000 people).
-- **Top 8 Countries by Metric: View the top 8 countries based on selected metrics such as Prevalence Rate, - **Mortality Rate, and Incidence Rate. Allows filtering by year for more granular analysis.
-- \*\*Global GDP & Health Expenditure Trend: Visualize trends for GDP and health expenditure as a percentage of GDP over time.
-- \*\*Life Expectancy & Health Expenditure Trends: Compare trends in life expectancy and health expenditure (% of GDP) over time.
-- \*\*Risk Factor Analysis
-- \*\*Global Risk Factors (Latest Year): Displays key risk factors such as Obesity Prevalence Rate, Physical Activity Rate, Alcohol Consumption, and Diabetes Prevalence Rate for the most recent year.
+- Average Mortality Rate: Presents the average heart disease mortality rate (per 100,000 people).
+- Average Prevalence Rate: Displays the average heart disease prevalence rate (per 100,000 people).
+- Top 8 Countries by Metric: View the top 8 countries based on selected metrics such as Prevalence Rate, - **Mortality Rate, and Incidence Rate. Allows filtering by year for more granular analysis.
+- Global GDP & Health Expenditure Trend: Visualize trends for GDP and health expenditure as a percentage of GDP over time.
+- Life Expectancy & Health Expenditure Trends: Compare trends in life expectancy and health expenditure (% of GDP) over time.
+- Risk Factor Analysis
+- Global Risk Factors (Latest Year): Displays key risk factors such as Obesity Prevalence Rate, Physical Activity Rate, Alcohol Consumption, and Diabetes Prevalence Rate for the most recent year.
   Health Expenditure & Risk Factor Trends: Explore correlations between health expenditure and major risk factors, like obesity and physical inactivity, across different countries.
-- \*\*Data Sources: A comprehensive list of authoritative global health and economic databases used in the analysis, including sources like WHO Global Health Observatory, World Bank, and Global Burden of Disease (GBD) Study.
+- Data Sources: A comprehensive list of authoritative global health and economic databases used in the analysis, including sources like WHO Global Health Observatory, World Bank, and Global Burden of Disease (GBD) Study.
 
 Global Health Maps
 
-- \*\*Interactive Visualizations: Explore a wide range of interactive charts, including choropleth maps, bar plots, and scatter plots to analyze global health data.
-- \*\*Customizable Filters: Filter data by year, region, economic indicators, age group, and gender to view the most relevant insights.
-- \*\*Economic Indicators: Display economic metrics such as GDP per capita and health expenditure alongside health outcomes for comprehensive analysis.
-- \*\*Trend Analysis: Visualize trends with regression lines on scatter plots to analyze correlations between economic factors and health outcomes.
-- \*\*Responsive Layout: Fully responsive design optimized for both desktop and mobile viewing, with adjustable chart sizes and interactive components.
-- \*\*Real-Time Updates: Dynamic updates to visualizations based on user selections, providing real-time insights across different health and economic metrics.
+- Interactive Visualizations: Explore a wide range of interactive charts, including choropleth maps, bar plots, and scatter plots to analyze global health data.
+- Customizable Filters: Filter data by year, region, economic indicators, age group, and gender to view the most relevant insights.
+- Economic Indicators: Display economic metrics such as GDP per capita and health expenditure alongside health outcomes for comprehensive analysis.
+- Trend Analysis: Visualize trends with regression lines on scatter plots to analyze correlations between economic factors and health outcomes.
+- Responsive Layout: Fully responsive design optimized for both desktop and mobile viewing, with adjustable chart sizes and interactive components.
+- Real-Time Updates: Dynamic updates to visualizations based on user selections, providing real-time insights across different health and economic metrics.
 
 Trend Analysis
 
-- **Prevalence Rate by Continent**: View the average prevalence rate by continent.
-- **Mortality Rate Over Time**: Analyze the trend of mortality rates over time by continent and age group.
-- **Mortality Rate by Country & Gender**: Compare mortality rates across countries and genders.
-- **Average Mortality per Country**: View the average mortality rate per country.
-- **Risk Factors Analysis by Region**: Visualize risk factors like alcohol consumption, diabetes prevalence, and obesity by country or continent.
+- Prevalence Rate by Continent**: View the average prevalence rate by continent.
+- Mortality Rate Over Time**: Analyze the trend of mortality rates over time by continent and age group.
+- Mortality Rate by Country & Gender**: Compare mortality rates across countries and genders.
+- Average Mortality per Country**: View the average mortality rate per country.
+- Risk Factors Analysis by Region**: Visualize risk factors like alcohol consumption, diabetes prevalence, and obesity by country or continent.
 
 Correlation Analysis
 
-- \*\*Interactive Heatmap: Visualize correlations between multiple health metrics across countries and years.
-- \*\*Scatter Plot: Explore relationships between selected health factors with dynamic axis selection.
-- \*\*Sankey Diagram: Analyze the flow of risk factors impacting heart disease across continents and regions.
-- \*\*Year and Country Filters: Filter data by year and country to focus on specific trends or regions.
-- \*\*Dynamic Feature Selection: Choose from a wide range of health features for detailed visual analysis.
-- \*\*Tooltip & Data Warnings: Get helpful tooltips and warnings for any missing or insufficient variance in the data.
+- Interactive Heatmap: Visualize correlations between multiple health metrics across countries and years.
+- Scatter Plot: Explore relationships between selected health factors with dynamic axis selection.
+- Sankey Diagram: Analyze the flow of risk factors impacting heart disease across continents and regions.
+- Year and Country Filters: Filter data by year and country to focus on specific trends or regions.
+- Dynamic Feature Selection: Choose from a wide range of health features for detailed visual analysis.
+- Tooltip & Data Warnings: Get helpful tooltips and warnings for any missing or insufficient variance in the data.
 
 ## Installation
 To run the deployed app: https://glass-timing-450808-q8.uc.r.appspot.com/
