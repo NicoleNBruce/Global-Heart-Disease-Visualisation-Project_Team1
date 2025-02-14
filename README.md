@@ -96,10 +96,6 @@ The app will be running on your local machine at `http://127.0.0.1:8050/`. Open 
 Find below a link to the User guide
 User Guide Link = [UserGuideLink]
 
-## Screenshots
-
-![Dashboard Screenshot](screenshots/dashboard_example.png)
-
 ## Live Demo
 
 You can view a live demo of this dashboard on [this link](http://link-to-live-demo).
